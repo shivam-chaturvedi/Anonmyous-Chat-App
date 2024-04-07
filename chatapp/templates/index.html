@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Anonymous Chat App</title>
+        {% load static %}
+
+        <link rel="icon" type="image/gif" href="{% static 'images/favicon.gif' %}">
+        <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    </head>
+
+    <body>
+        <header class="first-page">
+            <h1>Chat Anonymously With Anyone Anywhere</h1>
+            <h3>Experience an exciting free random chat alternative to find
+                friends, connect with strangers, and
+                talk with different people in random anonymous chat rooms. No
+                registration required.</h3>
+            <button id="start">Start Chatting</button>
+        </header>
+        {% include 'box.html' %}
+
+        <script src="{% static 'js/script.js' %}"></script>
+    </body>
+
+</html>
