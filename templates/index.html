@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Anonymous Chat App</title>
+        {% load static %}
+        <link rel="stylesheet" href="{% static 'css/style.css' %}">
+        <link rel="icon" type="image/gif" href="{% static 'images/favicon.gif' %}">
+        
+
+    </head>
+
+    <body>
+        <header class="first-page">
+            <h1>Chat Anonymously With Anyone Anywhere</h1>
+            <h3>Experience an exciting free random chat alternative to find
+                friends, connect with strangers, and
+                talk with different people in random anonymous chat rooms. No
+                registration required.</h3>
+            <button id="start">Start Chatting</button>
+        </header> 
+        {% include 'box.html' %}
+        {% include 'room-box.html' with title="Create Room" namelabel="Enter a Name" nameplaceholder="Room Name..." passlabel="Create password" %}
+
+
+        <script src="{% static 'js/script.js' %}"></script>
+        <script>
+            let username=""; 
+            let avatar="male";
+            const createroom=document.getElementById("create-room")
+
+            const input_username=document.getElementById("username")
+                        
+            createroom.addEventListener("click",(e)=>{
+            username=input_username.value;
+            avatar = document.querySelector('input[name="choice"]:checked').value;
+            if(username.trim()===""){
+                document.getElementById("warning").textContent="Please,enter a username ";
+                return false;
+            }
+            box.style.display="none";
+            roombox[0].style.display="block";
+            });
+
+            document.getElementById("room-form").addEventListener("submit", function(event) {
+                event.preventDefault(); // Prevent the default form submission
+                
+                var formData = new FormData();
+                formData.append("room_name", document.getElementById("room-name").value);
+                formData.append("room_password", document.getElementById("room-pass").value);
+                formData.append("username", username);
+                formData.append("avatar",avatar);
+                // Perform AJAX request
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", "/");
+                xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}"); // Include CSRF token
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === XMLHttpRequest.DONE) {
+                        if (xhr.status === 200) {
+                            // Handle successful response
+                            console.log("Form submitted successfully.");
+                            // Optionally, redirect to a new page
+                            window.location.href = "/new-page/";
+                        } else {
+                            // Handle error
+                            console.error("Error:", xhr.responseText);
+                        }
+                    }
+                };
+                xhr.send(formData);
+            });
+
+            
+        </script>
+    </body>
+
+</html>

@@ -1,0 +1,23 @@
+{% load static %}
+<div class="box" id="box">
+        <h2>Before you start...</h2>
+        <input id="username" name="username" placeholder="Enter Username" type="text" value="" required>
+        <p id="warning" style="color: red;"></p>
+        <h2>Choose Avatar</h2><hr>
+        <label class="choice-image-label1">
+            <input type="radio" name="choice" value="male"
+                class="radio-btn" checked>
+            <img src="{% static 'images/male.png' %}" alt="male"
+                class="choice-image">
+        </label>
+        <label class="choice-image-label2">
+            <input type="radio" name="choice" value="female"
+                class="radio-btn">
+            <img src="{% static 'images/female.png' %}" alt="female"
+                class="choice-image">
+        </label>
+        <button  id="create-room">Create Room</button>
+        <!-- <button id="close-box"> Close</button> -->
+        <button  id="join-room">Join Room</button>
+  
+</div>
