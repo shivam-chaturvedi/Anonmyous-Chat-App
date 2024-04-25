@@ -20,6 +20,7 @@ class MyConsumer(AsyncConsumer):
         print(e)
         
     async def chat_message(self,e):
+        print(e)
         await self.send({
             'type':'websocket.send',
             'text':e['msg']

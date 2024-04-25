@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>dd</title>
+    <style>
+        ::-webkit-scrollbar{
+            display: none;
+        }
+    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class=" bg-white h-screen">
+    <div x-data="sidebar()" class="overflow-auto bg-gray-900 h-5/6 w-full">
+        <h1 class=" text-white font-bold text-2xl text-center p-2 bg-gray-800">Total Members:X</h1>
+        <hr>
+        <h2 class="text-white text-lg font-semibold text-center">Members</h2>
+        <hr>
+        <template x-for="(member,index) in members" :key="index">
+            <!-- member div -->
+            <div class="w-auto h-auto flex items-center m-4 p-4 shadow hover:bg-black rounded-2xl cursor-pointer hover:shadow-md hover:shadow-blue-200">
+                <img class="text-white rounded-full p-2 bg-yellow-300" src="member.svg" :alt="member">
+                <p class="text-white text-xl ml-4" x-text="member"></p>
+
+            </div>
+        </template>
+    </div>
+    <script>
+        function sidebar(){
+            return {
+                members:['1','dkjfdh','adkljfda','djkfhjkd','dhfdhgfhj','dkjfdh','adkljfda','djkfhjkd','dhfdhgfhj','dkjfdh','adkljfda','djkfhjkd','dhfdhgfhj','dkjfdh','adkljfda','djkfhjkd','dhfdhgfhj','dkjfdh','adkljfda','djkfhjkd','dhfdhgfhj','dkjfdh','adkljfda','djkfhjkd','dhfdhgfhj'],
+            }
+        }
+    </script>
+</body>
+</html>

@@ -5,75 +5,60 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Anonymous Chat App</title>
-        {% load static %}
-        <link rel="stylesheet" href="{% static 'css/style.css' %}">
-        <link rel="icon" type="image/gif" href="{% static 'images/favicon.gif' %}">
-        
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     </head>
 
     <body>
-        <header class="first-page">
-            <h1>Chat Anonymously With Anyone Anywhere</h1>
-            <h3>Experience an exciting free random chat alternative to find
-                friends, connect with strangers, and
+        <div x-data="app()">
+
+        <div class="flex flex-col items-center justify-center h-screen bg-slate-600" x-bind:class="{'blur-sm': joinGroupForm || createGroupForm}">
+            <h1 class="text-4xl font-bold text-white m-3">Chat Anonymously With Anyone Anywhere</h1>
+            <h3 class="font-semibold text-gray-50 text-2xl p-4">Experience an exciting free random chat alternative to find
+                friends, connect with stranger, and
                 talk with different people in random anonymous chat rooms. No
                 registration required.</h3>
-            <button id="start">Start Chatting</button>
-        </header> 
-        {% include 'box.html' %}
-        {% include 'room-box.html' with title="Create Room" namelabel="Enter a Name" nameplaceholder="Room Name..." passlabel="Create password" %}
+                <div class=" w-screen flex justify-around">
+                    <button  @click="createGroup" class="m-2 border-2 border-green-500 bg-green-500 p-2 uppercase tracking-widest rounded-lg shadow-md hover:bg-green-700 hover:text-white hover:shadow-lg">Join An Existing Group</button>
+                    <button @click="joinGroup"  class="m-2 border-2 border-green-500 bg-green-500 p-2 uppercase tracking-widest rounded-lg shadow-md hover:bg-green-700 hover:text-white hover:shadow-lg">Create a New Group</button>
+                </div>
+        </div>
+        
+        <div x-show="createGroupForm" @click.away="createGroupForm=false;" class="flex border-2 flex-col absolute  top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-2xl shadow-md bg-gray-300 bg-opacity-80 w-auto md:text-2xl  p-4">
+            <input class="m-2 transform focus:scale-105 p-2" type="text" placeholder="Enter Group Name">
+            <input class="m-2 transform focus:scale-105 p-2" type="number" placeholder="Group Limit"  min="2">
+            <label class="mt-2 ml-2 p-2" for="member-name">Join as</label>
+            <input class="mb-2 ml-2 transform focus:scale-105 p-2" type="text" placeholder="Enter Your Name" name="member-name">
+            <button class="m-2 border-2 border-green-500 bg-green-500 p-2 uppercase tracking-widest rounded-lg shadow-md hover:bg-green-700 hover:text-white hover:shadow-lg">Create Group</button>
+        </div>
+        <div x-show="joinGroupForm" @click.away="joinGroupForm=false;" class="flex border-2 flex-col absolute  top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-2xl shadow-md bg-gray-300 bg-opacity-80 w-auto md:text-2xl  p-4">
+            <input class="m-2 transform focus:scale-105 p-2" type="text" placeholder="Enter Group ID">
+            <label class="mt-2 ml-2 p-2" for="member-name">Join as</label>
+            <input class="mb-2 ml-2 transform focus:scale-105 p-2" type="text" placeholder="Enter Your Name" name="member-name">
+            <button class="m-2 border-2 border-green-500 bg-green-500 p-2 uppercase tracking-widest rounded-lg shadow-md hover:bg-green-700 hover:text-white hover:shadow-lg ">Join Group</button>
+        </div>
 
+    </div>
 
-        <script src="{% static 'js/script.js' %}"></script>
-        <script>
-            let username=""; 
-            let avatar="male";
-            const createroom=document.getElementById("create-room")
-
-            const input_username=document.getElementById("username")
-                        
-            createroom.addEventListener("click",(e)=>{
-            username=input_username.value;
-            avatar = document.querySelector('input[name="choice"]:checked').value;
-            if(username.trim()===""){
-                document.getElementById("warning").textContent="Please,enter a username ";
-                return false;
+    <script>
+        function app(){
+            return {
+                joinGroupForm:false,
+                createGroupForm:false,
+                createGroup(e){
+                    this.joinGroupForm=true;
+                    this.createGroupForm=false;
+                   
+                },
+                joinGroup(e){
+                    this.createGroupForm=true;
+                    this.joinGroupForm=false;
+                },
             }
-            box.style.display="none";
-            roombox[0].style.display="block";
-            });
+        }
+    </script>
 
-            document.getElementById("room-form").addEventListener("submit", function(event) {
-                event.preventDefault(); // Prevent the default form submission
-                
-                var formData = new FormData();
-                formData.append("room_name", document.getElementById("room-name").value);
-                formData.append("room_password", document.getElementById("room-pass").value);
-                formData.append("username", username);
-                formData.append("avatar",avatar);
-                // Perform AJAX request
-                var xhr = new XMLHttpRequest();
-                xhr.open("POST", "/");
-                xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}"); // Include CSRF token
-                xhr.onreadystatechange = function() {
-                    if (xhr.readyState === XMLHttpRequest.DONE) {
-                        if (xhr.status === 200) {
-                            // Handle successful response
-                            console.log("Form submitted successfully.");
-                            // Optionally, redirect to a new page
-                            window.location.href = "/new-page/";
-                        } else {
-                            // Handle error
-                            console.error("Error:", xhr.responseText);
-                        }
-                    }
-                };
-                xhr.send(formData);
-            });
-
-            
-        </script>
     </body>
 
 </html>

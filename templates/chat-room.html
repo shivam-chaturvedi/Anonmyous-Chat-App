@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
+
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>chat room</title>
-        {% load static %}
+        <!-- {% load static %} -->
         <style>
             ::-webkit-scrollbar-thumb{
                 width: 0px;
@@ -102,8 +103,8 @@
             text-align: left;
             color: #ffffff9a;
             position: absolute;
-            top: 50%;
-            left: 35%;
+            top: 40vh;
+            left: 25vw;
         
             /* border: 2px solid red; */
         }
@@ -122,16 +123,20 @@
         align-items: center;
 
         }
-        .message-bar input{
+        .message-bar textarea{
+            margin: 0px;
+            outline: none;
             font-family: Inika;
-            font-size: 17px;
+            height: 100%;
+            font-size: 20px;
             font-weight: 700;
-            line-height: 22.15px;            
+            line-height: 20.15px;            
             flex-direction: column;
             justify-content: center;
+            color: whitesmoke;
 
             background-color: transparent;
-            padding: 2%;
+            padding: 1%;
             border: none;
             border-radius: 15px;
             width: 90%;
@@ -151,20 +156,23 @@
         .chat-room{
             display: flex;
         }
+        
         .sidebar{
             overflow: auto;
             width: 20%;
             background: #25262D;
             border-right: 2px solid rgb(19, 17, 17);
-            height: 93vh;
+            max-height: 90vh;
             font-family: Inter;
             font-size: 50%;
+            box-sizing: border-box;
             font-weight: 600;
             line-height: 24.2px;
             text-align: center;
             color: #ffffff;
 
         }
+        
         .sidebar h1{
             margin: 2%;
 
@@ -176,6 +184,7 @@
         .main-page{
             width: 80%;
         }
+        
         .member{
             display: flex;
             width: 90%;
@@ -241,9 +250,11 @@
         .message-box {
             position: relative;
             padding: 1%;
+            width: fit-content;
             border-radius: 15px;
-            max-width: 30%;
-            margin: 4%;
+            max-width: 60%;
+            word-wrap: break-word;
+            margin: 2%;
             background-color: #DCF8C6;
             border: 2px solid rebeccapurple;
 
@@ -263,25 +274,74 @@
             padding: 0%;
             text-wrap:wrap;
 
-            font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+            font-family:Franklin Gothic Medium, Arial Narrow, Arial, sans-serif;
             font-size: 16px;
             font-weight: 500;
         }
         .initial-content{
             position: absolute;
-            top: 30%;
-            left: 35%;
+            top: 20vh;
+            left: 25vw;
         }
         .chat-box{
-            border: 2px solid red;
+            /*border: 2px solid red;*/
             /* width: 80vh; */
             height: 94%;
             overflow: auto;
         }
+ 
+
+        @media (max-width: 768px) {
+
+            .main-page{
+                width: 100%;
+            }
+            .user{
+                display: none;
+            }
+            .initial-content{
+                position: absolute;
+                top:20vh;
+                left: 5vw;
+            }
+            .rules{
+            position: absolute;
+            top: 25vh;
+            left: 5vw;
+        }
+        .message-bar{
+            position:absolute;
+            top: 90%;
+            width: 95%;
+            padding: 2%;
+            box-sizing: border-box;
 
 
+        }
+        .chat-box{
+            height: 70vh;
+            box-sizing: border-box;
+        }
         
+        .sidebar{
+            display: none;
+            overflow: auto;
+            width: 100%;
+            z-index: 333;
+            background: #25262D;
+            border-right: 2px solid rgb(19, 17, 17);
+            max-height: 90vh;
+            font-family: Inter;
+            font-size: 50%;
+            box-sizing: border-box;
+            font-weight: 600;
+            line-height: 24.2px;
+            text-align: center;
+            color: #ffffff;
 
+
+        }
+        }
         
     </style>
     </head>
@@ -304,12 +364,11 @@
             <div class="main-page">
                 <header>
                     <div class="room-name">
-                        <img src="{% static 'images/male.png' %}" alt="room-icon"
-                            height="40px">
+                        <img src="{% static 'images/male.png' %}" alt="room-icon" height="40px">
                         <h2>Room Name</h2>
                     </div>
                     <div class="share-exit-group">
-                        <img src="{% static 'images/share.svg' %}">
+                        <img src="{% static 'images/share.svg' %}" %}>
                         <img src="{% static 'images/line.svg' %}">
 
                         <img src="{% static 'images/leave.svg' %}">
@@ -338,7 +397,7 @@
 
                 <footer>
                     <div class="message-bar">
-                        <input id="message-input" type="text" placeholder="Send a message...">
+                        <textarea id="message-input" placeholder="Send a message..." ></textarea>
                         <img src="{% static 'images/send.svg' %}" alt="send" id="send">
                     </div>
 
@@ -369,12 +428,18 @@
                 newHeading.textContent = "name";
 
                 let newParagraph = document.createElement("p");
+
+                newParagraph.style.whiteSpace = "pre-line"; 
                 newParagraph.textContent = e['data'];
 
                 newMessageBox.appendChild(newHeading);
                 newMessageBox.appendChild(newParagraph);
 
                 chatbox.appendChild(newMessageBox);
+
+                document.getElementsByClassName("initial-content")[0].style.display="none";
+
+                document.getElementsByClassName("rules")[0].style.display="none";
 
             }
 
@@ -386,8 +451,10 @@
         document.getElementsByClassName("rules")[0].style.display="none";
         let message_input=document.getElementById("message-input");
         msg=message_input.value;
+        console.log(msg)
+
         if(msg===""){
-            return false;
+            // return false;
         }
         
         ws.send(msg);
@@ -403,16 +470,16 @@
     </body>
 </html>
 
-
+<!-- 
     //     let sidebar=document.getElementById("sidebar")
     //     let new_member = document.createElement("div");
     // new_member.classList.add("member");
     // let new_member_image = document.createElement("img");
-    // new_member_image.src = "{% static 'images/member.s' %}vg"; 
+    // new_member_image.src = "{% static 'images/member.svg' %}"; 
     // new_member_image.alt="member"
     // new_member.appendChild(new_member_image); 
     // let new_member_name = document.createElement("p");
     // i+=1;
     // new_member_name.textContent = "member "+i; 
     // new_member.appendChild(new_member_name); 
-    // sidebar.appendChild(new_member);
+    // sidebar.appendChild(new_member); -->

@@ -12,4 +12,4 @@ def home(req):
         obj.save()
         return render(req,'chat-room.html',{'userid':id})
     else:
-        return render(req,'chat-room.html')
+        return render(req,'index.html')
