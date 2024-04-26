@@ -13,7 +13,7 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body class="flex flex-col bg-gray-700">
-    <div x-data="app()" class="relative flex h-screen w-screen" >
+    <div x-data="app()" x-init="initialize()" class="relative flex h-screen w-screen" >
     <!-- sidebar -->
     <div x-bind:class="{'block w-1/2 z-20 absolute h-full opacity-90 lg:relative lg:w-2/12':sidebar,'hidden':!sidebar}" class="overflow-auto bg-gray-900 h-auto w-2/12 lg:block" >
         <h1 class="sticky top-0 z-20 text-white font-bold text-xl lg:text-2xl text-center p-2 mt-4 mb-2 bg-gray-800">Total Members:X</h1>
@@ -32,7 +32,7 @@
     <!-- sidebar end -->
     
     <!-- main chat page -->
-    <div x-data="mainchat()" @click="closeSidebar($event)" class=" w-full lg:w-11/12 relative z-10 ">
+    <div  @click="closeSidebar($event)" class=" w-full lg:w-11/12 h-screen">
         <nav x-ref="navbar" class="text-cyan-50 flex justify-between items-center w-full bg-gray-900 border-b-2 border-black h-20 ">
            <div  @click="openSidebar()" class="flex m-2 cursor-pointer lg:cursor-text lg:pointer-events-none">
             <img class="mr-3 bg-yellow-100" src="images/member.svg" alt="Room Icon">
@@ -49,8 +49,16 @@
            </div> 
         </nav>
         <!-- main page -->
-        <main>
-            <div class=" absolute top-1/3 left-1/3 transform -translate-x-1/3 -translate-y-1/3 text-2xl font-bold mt-3 ">
+        <main class="w-full h-5/6 overflow-auto lg:h-5/6 p-5">
+            <!-- message box -->
+                <template x-for="(message,index) in messages" :key="index">                    
+                    <div x-bind:class="{'ml-auto ' : isMessageFromMe}" class="p-2 rounded-r-2xl border-gray-600 shadow-md border-t-8 rounded-b-2xl  font-mono w-10/12 h-auto break-words  bg-gray-300 ">
+                        <h1 x-text="message.name" ></h1>
+                        <p x-text="message.content" ></p>
+                    </div>
+                </template>
+
+            <div x-show="initialText" class="absolute top-1/3 left-1/3 transform -translate-x-1/3 -translate-y-1/3 mt-3 ">
             <h1 class="w-full text-4xl font-bold mb-4 md:text-5xl">Hello Username..</h1>
                 <h2 class="text-3xl text-gray-500 md:text-4xl">Rules</h2>
                 <ul class="list-disc ">
@@ -60,13 +68,13 @@
                     <li>Lorem ipsum dolor sit amet con</li>
                 </ul>
             </div>   
-
+    
         </main>
-
-        <div class="w-full absolute bottom-0 flex p-2 border-transparent shadow-md shadow-blue-950 border-4 items-center">
-            <textarea x-bind:style="{height:textAreaHeight}" x-on:input="updateHeight($event)"  class="max-h-36 h-full resize-none border  border-gray-300 rounded-md p-2 w-full focus:outline-none focus:border-blue-100 overflow-auto text-xl lg:text-2xl" placeholder="Send a message.."></textarea>
-            <img class="w-12 m-3 cursor-pointer"  src="images/send.svg" alt="send"> 
+        <div class="w-full sticky bottom-0 flex p-2 border-transparent shadow-lg shadow-blue-950 border-4 items-center">
+            <textarea x-model="message" x-bind:style="{height:textAreaHeight}" x-on:input="updateHeight($event)"  class="max-h-36 h-full resize-none border  border-gray-300 rounded-md p-2 w-full focus:outline-none focus:border-blue-100 overflow-auto text-xl lg:text-2xl" placeholder="Send a message.."></textarea>
+            <img @click="sendMessage()" class="w-12 m-3 cursor-pointer"  src="images/send.svg" alt="send"> 
         </div>  
+
     </div>
     <!-- main chat page end -->
 </div>
@@ -75,8 +83,25 @@
         function app(){
 
             return {
+                ws:null,
+                initialText:true,
+                isMessageFromMe:false,
+                message:'',
+                messages:[{name:'abc',content:'content lorem hdsfj\ndshfjs\n\n\tdhjf\tsdjfhsdjfhsdjfhdsjkhfsjkdhfsjkjhjkfdhjkfjkflgjfdklgjdfklj\tggjdfkljg'},{name:'abc',content:'content lorem hdsfjdshfjsdhjfsdjfhsdjfhsdjfhdsjkhfsjkdhfsjkjhjkfdhjkfjkflgjfdklgjdfkljggjdfkljg'},{name:'abc',content:'content lorem hdsfjdshfjsdhjfsdjfhsdjfhsdjfhdsjkhfsjkdhfsjkjhjkfdhjkfjkflgjfdklgjdfkljggjdfkljg'},{name:'abc',content:'content lorem hdsfjdshfjsdhjfsdjfhsdjfhsdjfhdsjkhfsjkdhfsjkjhjkfdhjkfjkflgjfdklgjdfkljggjdfkljg'},{name:'abc',content:'content lorem hdsfjdshfjsdhjfsdjfhsdjfhsdjfhdsjkhfsjkdhfsjkjhjkfdhjkfjkflgjfdklgjdfkljggjdfkljg'},{name:'abc',content:'content lorem hdsfjdshfjsdhjfsdjfhsdjfhsdjfhdsjkhfsjkdhfsjkjhjkfdhjkfjkflgjfdklgjdfkljggjdfkljg'},{name:'abc',content:'content lorem hdsfjdshfjsdhjfsdjfhsdjfhsdjfhdsjkhfsjkdhfsjkjhjkfdhjkfjkflgjfdklgjdfkljggjdfkljg'},{name:'abc',content:'content lorem hdsfjdshfjsdhjfsdjfhsdjfhsdjfhdsjkhfsjkdhfsjkjhjkfdhjkfjkflgjfdklgjdfkljggjdfkljg'},{name:'abc',content:'content lorem hdsfjdshfjsdhjfsdjfhsdjfhsdjfhdsjkhfsjkdhfsjkjhjkfdhjkfjkflgjfdklgjdfkljggjdfkljg'}],
                 members:['1','dkjfdh','adkljfda','djkfhjkd','dhfdhgfhj','dkjfdh','adkljfda','djkfhjkd','dhfdhgfhj','dkjfdh','adkljfda','djkfhjkd','dhfdhgfhj','dkjfdh','adkljfda','djkfhjkd','dhfdhgfhj','dkjfdh','adkljfda','djkfhjkd','dhfdhgfhj','dkjfdh','adkljfda','djkfhjkd','dhfdhgfhj'],
                 sidebar:false,
+                wsURL:'ws://localhost:8000/ws',
+                textAreaHeight:'70px',
+
+                updateHeight(e){
+                    if(e.target.scrollHeight===142){
+                        this.textAreaHeight='70px';
+                    }
+                    else if(e.target.scrollHeight>75){
+                        this.textAreaHeight=`${e.target.scrollHeight}px`;
+                    }
+                },
+
                 openSidebar(){
                     this.sidebar=true;
                 },
@@ -85,26 +110,38 @@
                         this.sidebar=false;
                     }
                 },
-                
-            }
-        }
-        function mainchat(){
-            return {
-                textAreaHeight:'70px',
-                updateHeight(e){
-                    console.log(e.target.scrollHeight);
-                    if(e.target.scrollHeight===142){
-                        this.textAreaHeight='70px';
+                initialize(){
+                    this.ws=new WebSocket(this.wsURL+"?id=1");
+                    this.ws.onopen=(e)=>{
+                        console.log("Connected to ",this.wsURL)
                     }
-                    else if(e.target.scrollHeight>75){
-                        this.textAreaHeight=`${e.target.scrollHeight}px`;
-                    }
-                    console.log(`${e.target.scrollHeight}px`)
-                },
-                
+                        
+                    
+                    this.ws.onmessage=(e)=>{
+                        const data=JSON.parse(e.data);
+                        if(data.memberid===1){
 
-            }
+                        }
+
+                    }
+
+                    this.ws.onclose=(e)=>{
+                        console.log("websocket closed!")    
+                    }
+                },
+                sendMessage(){
+                    if(this.message.trim()!=='' && this.ws!==null){
+                        this.ws.send(JSON.stringify({
+                            memberid:1,
+                            message:this.message,
+                        }));
+                        this.message='';
+                        this.textAreaHeight='70px';
+                        this.initialText=false;
+                    }
+                },
         }
+    }
     </script>
 </body>
 </html>
