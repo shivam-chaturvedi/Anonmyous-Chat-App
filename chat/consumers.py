@@ -23,7 +23,7 @@ class MyConsumer(AsyncConsumer):
         query_param=parse_qs(self.scope['query_string'].decode('utf-8'))
         id=int(query_param.get('id',[None])[0])
         print(id)
-        member_info=await self.get_member_info(1)
+        member_info=await self.get_member_info(id)
         print(member_info)
         self.group_id=str(member_info['group_id'])
         await self.channel_layer.group_add(self.group_id,self.channel_name)
@@ -44,9 +44,9 @@ class MyConsumer(AsyncConsumer):
     async def websocket_receive(self,e):
         data=json.loads(e['text'])
         data['initialMessage']=False
-        member_info=await self.get_member_info(data['memberid'])
-        print(member_info)
-        data['name']=member_info.get('name')
+        # member_info=await self.get_member_info(data['memberid'])
+        # print(member_info)
+        # data['name']=member_info.get('name')
         await self.channel_layer.group_send(self.group_id,{
             'type':'chat.message',
             'msg':json.dumps(data)

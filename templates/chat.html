@@ -15,6 +15,7 @@
 <body class="flex flex-col  bg-gray-900">
     <div x-data="app()" x-init="initialize()" class="relative flex p-2 w-screen h-screen" >
 
+    <!-- sidebar start -->
     <div x-bind:class="{'w-1/2 z-20 absolute h-full opacity-90 lg:relative lg:w-2/12 transition-all duration-300 ease-in-out':sidebar,'w-0 lg:w-2/12':!sidebar}" class="overflow-auto bg-gray-900 h-auto w-2/12 ">
 
         <h1 class="sticky top-0 z-20 text-white font-bold text-xl lg:text-2xl text-center p-2 mt-4 mb-2 bg-gray-800">Total Members:X</h1>
@@ -55,7 +56,7 @@
         <main class="w-full ml-2 h-5/6 overflow-auto lg:h-5/6 p-3">
             <!-- message box -->
                 <template x-for="(message,index) in messages" :key="index">                    
-                    <div x-bind:class="{'ml-auto rounded-l-2xl rounded-tr-none bg-gray-400 text-yellow-400' : message.memberid===1};initialText=false" class="text-blue-500 whitespace-pre-line p-2 rounded-r-2xl border-gray-600 shadow-md shadow-blue-200 rounded-b-2xl  font-mono h-fit break-words m-4 bg-gray-300 w-2/3 ">
+                    <div x-bind:class="{'ml-auto rounded-l-2xl rounded-tr-none bg-gray-400 text-yellow-400' : message.memberid===localStorage.getItem('memberid')};initialText=false;" class="text-blue-500 whitespace-pre-line p-2 rounded-r-2xl border-gray-600 shadow-md shadow-blue-200 rounded-b-2xl  font-mono h-fit break-words m-4 bg-gray-300 w-2/3 ">
                         <h1 class="text-2xl uppercase font-bold " x-text="message.name" ></h1>
                         <p class="text-black font-sans text-xl" x-text="message.content" ></p>
                     </div>rounded-r-2xl
@@ -117,8 +118,11 @@
                     }
                 },
                 initialize(){
-                    localStorage.setItem("init",'hello')
-                    this.ws=new WebSocket(this.wsURL+"?id=1");
+                    const memberid=localStorage.getItem("memberid");
+                    if(memberid===null){
+                        window.location.replace("/")
+                    }
+                    this.ws=new WebSocket(`${this.wsURL}?id=${memberid}`);
                     this.ws.onopen=(e)=>{
                         console.log("Connected to ",this.wsURL)
                     }
@@ -132,6 +136,8 @@
                             this.groupId=data.groupId;
                             this.groupName=data.groupName;
                             this.username=data.username;
+
+                            localStorage.setItem("username",data.username);
                         }
                         else{
                         this.messages.push(data);
@@ -145,9 +151,12 @@
                 },
                 sendMessage(){
                     if(this.message.trim()!=='' && this.ws!==null){
+                        const username=localStorage.getItem("username");
+                        const memberid=localStorage.getItem("memberid");
                         this.ws.send(JSON.stringify({
-                            memberid:1,
+                            memberid:memberid,
                             content:this.message,
+                            name:username,
                         }));
                         this.message='';
                         this.textAreaHeight='70px';
@@ -158,6 +167,7 @@
     }
     window.addEventListener("beforeunload",(e)=>{
         // localStorage.removeItem("init")
+        localStorage.clear()
     })
     </script>
 </body>

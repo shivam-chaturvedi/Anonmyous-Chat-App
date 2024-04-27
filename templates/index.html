@@ -1,13 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
-
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Anonymous Chat App</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
     </head>
 
     <body>
@@ -20,22 +18,22 @@
                 talk with different people in random anonymous chat rooms. No
                 registration required.</h3>
                 <div class=" w-screen flex justify-around">
-                    <button  @click="createGroup" class="m-2 border-2 border-green-500 bg-green-500 p-2 uppercase tracking-widest rounded-lg shadow-md hover:bg-green-700 hover:text-white hover:shadow-lg">Join An Existing Group</button>
-                    <button @click="joinGroup"  class="m-2 border-2 border-green-500 bg-green-500 p-2 uppercase tracking-widest rounded-lg shadow-md hover:bg-green-700 hover:text-white hover:shadow-lg">Create a New Group</button>
+                    <button  @click="openJoinGroupForm" class="m-2 border-2 border-green-500 bg-green-500 p-2 uppercase tracking-widest rounded-lg shadow-md hover:bg-green-700 hover:text-white hover:shadow-lg">Join An Existing Group</button>
+                    <button @click="openCreateGroupForm"  class="m-2 border-2 border-green-500 bg-green-500 p-2 uppercase tracking-widest rounded-lg shadow-md hover:bg-green-700 hover:text-white hover:shadow-lg">Create a New Group</button>
                 </div>
         </div>
         
         <div x-show="createGroupForm" @click.away="createGroupForm=false;" class="flex border-2 flex-col absolute  top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-2xl shadow-md bg-gray-300 bg-opacity-80 w-auto md:text-2xl  p-4">
-            <input class="m-2 transform focus:scale-105 p-2" type="text" placeholder="Enter Group Name">
-            <input class="m-2 transform focus:scale-105 p-2" type="number" placeholder="Group Limit"  min="2">
+            <input x-model="groupNameinput" class="m-2 transform focus:scale-105 p-2" type="text" placeholder="Enter Group Name">
+            <input x-model="groupLimitInput" class="m-2 transform focus:scale-105 p-2" type="number" placeholder="Group Limit"  min="2">
             <label class="mt-2 ml-2 p-2" for="member-name">Join as</label>
-            <input class="mb-2 ml-2 transform focus:scale-105 p-2" type="text" placeholder="Enter Your Name" name="member-name">
-            <button class="m-2 border-2 border-green-500 bg-green-500 p-2 uppercase tracking-widest rounded-lg shadow-md hover:bg-green-700 hover:text-white hover:shadow-lg">Create Group</button>
+            <input x-model="usernameInput" class="mb-2 ml-2 transform focus:scale-105 p-2" type="text" placeholder="Enter Your Name" name="member-name">
+            <button @click="createGroup" class="m-2 border-2 border-green-500 bg-green-500 p-2 uppercase tracking-widest rounded-lg shadow-md hover:bg-green-700 hover:text-white hover:shadow-lg">Create Group</button>
         </div>
         <div x-show="joinGroupForm" @click.away="joinGroupForm=false;" class="flex border-2 flex-col absolute  top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-2xl shadow-md bg-gray-300 bg-opacity-80 w-auto md:text-2xl  p-4">
-            <input class="m-2 transform focus:scale-105 p-2" type="text" placeholder="Enter Group ID">
+            <input x-model="groupIdInput" class="m-2 transform focus:scale-105 p-2" type="text" placeholder="Enter Group ID">
             <label class="mt-2 ml-2 p-2" for="member-name">Join as</label>
-            <input class="mb-2 ml-2 transform focus:scale-105 p-2" type="text" placeholder="Enter Your Name" name="member-name">
+            <input x-model="usernameInput" class="mb-2 ml-2 transform focus:scale-105 p-2" type="text" placeholder="Enter Your Name" name="member-name">
             <button class="m-2 border-2 border-green-500 bg-green-500 p-2 uppercase tracking-widest rounded-lg shadow-md hover:bg-green-700 hover:text-white hover:shadow-lg ">Join Group</button>
         </div>
 
@@ -44,17 +42,51 @@
     <script>
         function app(){
             return {
+                createGroupApi:'http://127.0.0.1:8000/',
                 joinGroupForm:false,
                 createGroupForm:false,
-                createGroup(e){
-                    this.joinGroupForm=true;
-                    this.createGroupForm=false;
-                   
-                },
-                joinGroup(e){
+                groupIdInput:'',
+                groupNameinput:'',
+                groupLimitInput:'',
+                usernameInput:'',
+                openCreateGroupForm(e){
                     this.createGroupForm=true;
                     this.joinGroupForm=false;
+                   
                 },
+                openJoinGroupForm(e){
+                    this.joinGroupForm=true;
+                    this.createGroupForm=false;
+                },
+                async createGroup(){
+                    const data={
+                        groupName:this.groupNameinput,
+                        groupLimit:this.groupLimitInput,
+                        username:this.usernameInput,
+                    }
+                    try{
+                        const response=await fetch(
+                            this.createGroupApi,{
+                                method:'POST',
+                                headers:{'Content-Type':'application/json'},
+                                body:JSON.stringify(data),
+                        }
+                        );
+                        const responsedata=await response.json();
+                        if(response.ok){
+                            localStorage.setItem('memberid',responsedata.memberid);
+                            window.location.replace('/chat.html');
+                        }
+                        if(response.status===400){
+                            console.log(responsedata)
+                        }
+                    }
+                    catch(error){
+                        console.error(error);
+                    }
+
+                },
+
             }
         }
     </script>
