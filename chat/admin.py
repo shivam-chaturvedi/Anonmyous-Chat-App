@@ -7,6 +7,6 @@ class MemberAdmin(admin.ModelAdmin):
 admin.site.register(Member,MemberAdmin)
 
 class GroupAdmin(admin.ModelAdmin):
-    list_display=('id','Name')
+    list_display=('id','Name','Limit')
 
 admin.site.register(Groups,GroupAdmin)
