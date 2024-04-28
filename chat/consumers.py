@@ -24,15 +24,25 @@ class MyConsumer(AsyncConsumer):
         id=int(query_param.get('id',[None])[0])
         print(id)
         member_info=await self.get_member_info(id)
-        print(member_info)
+        print(member_info.get("name"))
         self.group_id=str(member_info['group_id'])
         await self.channel_layer.group_add(self.group_id,self.channel_name)
         await self.send({
             'type':'websocket.accept'
         })
-        await self.send({
-            'type':'websocket.send',
-            'text':json.dumps({
+        # await self.send({
+        #     'type':'websocket.send',
+        #     'text':json.dumps({
+        #         'updateMemberInfo':True,
+        #         'members':member_info.get('group_members'),
+        #         'groupName':member_info.get('group_name'),
+        #         'groupId':member_info.get('group_id'),
+        #         'username':member_info.get('name'),
+        #     })
+        # })
+        await self.channel_layer.group_send(self.group_id,{
+            'type':'chat.message',
+            'msg':json.dumps({
                 'updateMemberInfo':True,
                 'members':member_info.get('group_members'),
                 'groupName':member_info.get('group_name'),
@@ -60,5 +70,5 @@ class MyConsumer(AsyncConsumer):
         })
 
     async def websocket_disconnect(self,e):
-        await self.channel_layer.group_discard(self.group_name,self.channel_name)
+        await self.channel_layer.group_discard(self.group_id,self.channel_name)
         raise StopConsumer()
