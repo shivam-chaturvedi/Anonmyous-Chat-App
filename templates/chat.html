@@ -73,13 +73,17 @@
                 <!-- main page -->
                 <main x-ref="chatBox" class="w-full ml-2 h-5/6 overflow-auto lg:h-5/6 p-3">
                     <!-- message box -->
-                    <template x-for="(message,index) in messages" :key="index">
-                        <div
+                    <template x-for="(message,index) in messages"  :key="index">
+                        <div style="max-width: 70%;"
                             x-bind:class="{'ml-auto rounded-l-2xl rounded-tr-none bg-gray-400 text-yellow-400' : message.memberid===parseInt(localStorage.getItem('memberid'))};initialText=false;"
-                            class="text-blue-500 whitespace-pre-line p-2 rounded-r-2xl border-gray-600 shadow-md mb-7 shadow-blue-200 rounded-b-2xl  font-mono h-fit break-words m-4 bg-gray-300 lg:w-fit lg:min-w-80 w-2/3 ">
-                            <h1 class="text-2xl uppercase font-bold " x-text="getMemberName(message.memberid)"></h1>
-                            <p class="text-black font-sans text-xl" x-text="message.content"></p>
+                            class="text-blue-500 leading-3 p-2 whitespace-pre-line rounded-r-2xl border-gray-600 shadow-md  shadow-blue-200 rounded-b-2xl  font-mono h-fit break-words mb-7 m-4 bg-gray-300  w-fit lg:max-w-fit ">
+                            <h1 class="text-2xl uppercase font-bold m-0 " x-text="getMemberName(message.memberid)"></h1>
+                            <p  class="text-black font-sans text-xl  m-0" x-text="message.content"></p>
+                            <!-- this p tag is added only to scroll the div at end when a message added -->
+                            <p x-effect="$refs.chatBox.scrollTop=$refs.chatBox.scrollHeight"></p> 
+                            
                         </div>
+
                     </template>
 
                     <div x-show="initialText"
@@ -98,8 +102,7 @@
                     </div>
 
                 </main>
-                <div
-                    class="w-full absolute bottom-0 flex p-2  border-transparent shadow-lg shadow-blue-950 border-4 items-center">
+                <div class="w-full absolute bottom-0 flex p-2  border-transparent shadow-lg shadow-blue-950 border-4 items-center" >
                     <textarea x-model="message"
                         x-bind:style="{height:textAreaHeight}"
                         x-on:input="updateHeight($event)"
@@ -129,7 +132,7 @@
                 sidebar:false,
                 wsURL:'ws://localhost:8000/ws',
                 textAreaHeight:'70px',
-
+            
                 updateHeight(e){
                     if(e.target.scrollHeight===142){
                         this.textAreaHeight='70px';
@@ -154,12 +157,12 @@
                     }
                     this.ws=new WebSocket(`${this.wsURL}?id=${memberid}`);
                     this.ws.onopen=(e)=>{
-                        console.log("Connected to ",this.wsURL);
+                        // console.log("Connected to ",this.wsURL);
                         const openReq=window.indexedDB.open('Messages',1);
 
                         openReq.onupgradeneeded=(event)=>{
                             this.localDB=event.target.result;
-                            console.log(this.localDB);
+                            // console.log(this.localDB);
                             const objectStore=this.localDB.createObjectStore('message',{autoIncrement: true });
                         }
                         openReq.onsuccess=(event)=>{
@@ -170,6 +173,7 @@
                             getAllReq.onsuccess=(e)=>{
                                 const data=e.target.result;
                                 this.messages=data;
+                                
                             }
                         }
                         openReq.onerror=(e)=>{
@@ -181,23 +185,24 @@
                     
                     this.ws.onmessage=(e)=>{
                         const data=JSON.parse(e.data);
-                        console.log(data)
+                        // console.log(data)
                         if(data.updateMemberInfo){
                             this.members=data.members;
                             this.groupId=data.groupId;
                             this.groupName=data.groupName;
                             this.username=data.username;
-                            console.log(data.members)
+                            // console.log(data.members)
 
                             localStorage.setItem("username",data.username);
                         }
                         else{
-                        this.messages.push({memberid:parseInt(data.memberid),content:data.content});
+                        const message={memberid:parseInt(data.memberid),content:data.content.trim()}
+                        this.messages.push(message);
                         const transaction=this.localDB.transaction(['message'],'readwrite');
                         const objectStore=transaction.objectStore('message');
-                        const addDataReq=objectStore.add({memberid:parseInt(data.memberid),content:data.content});
+                        const addDataReq=objectStore.add(message);
                         addDataReq.onsuccess=(e)=>{
-                            console.log("MESSAGE ADDED SUCCESSFULLY!",e);
+                            // console.log("MESSAGE ADDED SUCCESSFULLY!",e);
                         }
                         }
 
@@ -209,7 +214,6 @@
                 },
                 sendMessage(){
                     if(this.message.trim()!=='' && this.ws!==null){
-                        const username=localStorage.getItem("username");
                         const memberid=localStorage.getItem("memberid");
                         this.ws.send(JSON.stringify({
                             memberid:memberid,
@@ -224,11 +228,10 @@
                 },
                 getMemberName(memberid){
                     let memberName=null;
-                    console.log(memberid)
+                    // console.log(memberid)
                     if(this.members.length>0){
                         for(let i=0;i<this.members.length;i++){
-                            if(this.members[i].memberid=memberid){
-                                console.log(this.members[i])
+                            if(this.members[i].memberid=memberid){ 
                                 memberName=this.members[i].name;
                                 break;
                             }
@@ -242,8 +245,6 @@
         }
     }
     window.addEventListener("beforeunload",(e)=>{
-        // localStorage.removeItem("init")
-        // localStorage.clear()
         this.localDB.close();
     })
     </script>
