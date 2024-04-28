@@ -1,94 +1,124 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat Room</title>
-    <style>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Chat Room</title>
+        <style>
     ::-webkit-scrollbar {
         display: none;
     }
     </style>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-</head>
-<body class="flex flex-col  bg-gray-900">
-    <div x-data="app()" x-init="initialize()" class="relative flex p-2 w-screen h-screen" >
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script defer
+            src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    </head>
+    <body class="flex flex-col  bg-gray-900">
+        <div x-data="app()" x-init="initialize()"
+            class="relative flex p-2 w-screen h-screen">
 
-    <!-- sidebar start -->
-    <div x-bind:class="{'w-1/2 z-20 absolute h-full opacity-90 lg:relative lg:w-2/12 transition-all duration-300 ease-in-out':sidebar,'w-0 lg:w-2/12':!sidebar}" class="overflow-auto bg-gray-900 h-auto w-2/12 ">
+            <!-- sidebar start -->
+            <div
+                x-bind:class="{'w-1/2 z-20 absolute h-full opacity-90 lg:relative lg:w-2/12 transition-all duration-300 ease-in-out':sidebar,'w-0 lg:w-2/12':!sidebar}"
+                class="overflow-auto bg-gray-900 h-auto w-2/12 ">
 
-        <h1 class="sticky top-0 z-20 text-white font-bold text-xl lg:text-2xl text-center p-2 mt-4 mb-2 bg-gray-800">Total Members:X</h1>
-    
-        <h2 class="sticky top-20 z-20 text-white text-lg font-semibold text-center">Members</h2>
-      
-        <template x-for="(member,index) in members" :key="index">
-            <!-- member div -->
-            
-            <div  class="w-auto  overflow-auto transition-all duration-300 ease-in-outo h-auto flex items-center m-4 p-4 shadow hover:bg-black rounded-2xl cursor-pointer hover:shadow-md hover:shadow-blue-200">
-                <!-- <img class="text-white rounded-full p-4 bg-yellow-300" src="images/member.svg" :alt="member"> -->
-                <p x-text="member.name[0]" class="text-black rounded-full h-12 w-12 text-center bg-purple-300 text-4xl font-bold"></p>
-                <p class="text-white text-xl ml-4" x-text="member.name"></p>
+                <h1
+                    class="sticky top-0 z-20 text-white font-bold text-xl lg:text-2xl text-center p-2 mt-4 mb-2 bg-gray-800">Total
+                    Members:X</h1>
 
-            </div>
-        </template>
-    </div>
-    <!-- sidebar end -->
-    
-    <!-- main chat page -->
-    <div  @click="closeSidebar($event)" class=" w-full lg:w-10/12  h-full relative bg-gray-700">
-        <nav x-ref="navbar" class="text-cyan-50 flex justify-between items-center w-full  bg-gray-900 border-b-0 border-black h-20 ">
-           <div  @click="openSidebar()" class="flex m-2 cursor-pointer lg:cursor-text lg:pointer-events-none w-2/3 overflow-clip">
-            <img class="mr-3 bg-yellow-100" src="images/member.svg" alt="Room Icon">
-            <div class="flex flex-col">
-            <h2 x-text="groupName">Room Name</h2>
-            <p x-text="groupId" class="text-gray-400">Room ID</p>
-            </div>
-           </div> 
-           <!-- share-exit -->
-           <div class="flex m-4 w-2/6 p-3 justify-end overflow-visible ">
-            <img class="mr-2 cursor-pointer" src="images/share.svg" alt="share">
-            <img class="mr-2 cursor-pointer" src="images/exit.svg" alt="exit">
-            <img class="cursor-pointer" src="images/info.svg" alt="info">
-           </div> 
-        </nav>
-        <!-- main page -->
-        <main class="w-full ml-2 h-5/6 overflow-auto lg:h-5/6 p-3">
-            <!-- message box -->
-                <template x-for="(message,index) in messages" :key="index">                    
-                    <div x-bind:class="{'ml-auto rounded-l-2xl rounded-tr-none bg-gray-400 text-yellow-400' : message.memberid===localStorage.getItem('memberid')};initialText=false;" class="text-blue-500 whitespace-pre-line p-2 rounded-r-2xl border-gray-600 shadow-md shadow-blue-200 rounded-b-2xl  font-mono h-fit break-words m-4 bg-gray-300 w-2/3 ">
-                        <h1 class="text-2xl uppercase font-bold " x-text="message.name" ></h1>
-                        <p class="text-black font-sans text-xl" x-text="message.content" ></p>
-                    </div>rounded-r-2xl
+                <h2
+                    class="sticky top-20 z-20 text-white text-lg font-semibold text-center">Members</h2>
+
+                <template x-for="(member,index) in members" :key="index">
+                    <!-- member div -->
+                    <div
+                        class="w-auto  overflow-auto transition-all duration-300 ease-in-outo h-auto flex items-center m-4 p-4 shadow hover:bg-black rounded-2xl cursor-pointer hover:shadow-md hover:shadow-blue-200">
+                        <!-- <img class="text-white rounded-full p-4 bg-yellow-300" src="images/member.svg" :alt="member"> -->
+                        <p x-text="member.name[0]"
+                            class="text-black rounded-full h-12 w-12 text-center bg-purple-300 text-4xl font-bold uppercase"></p>
+                        <p class="text-white text-xl ml-4"
+                            x-text="member.name"></p>
+
+                    </div>
                 </template>
+            </div>
+            <!-- sidebar end -->
 
-            <div x-show="initialText"  class="absolute top-1/3 left-1/3 transform -translate-x-1/3 -translate-y-1/3 mt-3 ">
-            <h1 x-text="`Hello ${username}`" class="w-full text-4xl font-bold mb-4 md:text-5xl">Hello Username..</h1>
-                <h2 class="text-3xl text-gray-500 md:text-4xl">Rules</h2>
-                <ul class="list-disc ">
-                    <li>Lorem ipsum dolor sit amet con</li>
-                    <li>Lorem ipsum dolor sit amet con</li>
-                    <li>Lorem ipsum dolor sit amet con</li>
-                    <li>Lorem ipsum dolor sit amet con</li>
-                </ul>
-            </div>   
-    
-        </main>
-        <div class="w-full absolute bottom-0 flex p-2  border-transparent shadow-lg shadow-blue-950 border-4 items-center">
-            <textarea x-model="message" x-bind:style="{height:textAreaHeight}" x-on:input="updateHeight($event)"  class="max-h-36 h-full resize-none border mr-2  border-gray-300 rounded-md p-2 w-full focus:outline-none focus:border-blue-100 overflow-auto text-xl lg:text-2xl" placeholder="Send a message.."></textarea>
-            <img @click="sendMessage()" class="w-12 cursor-pointer"  src="images/send.svg" alt="send"> 
-        </div>  
+            <!-- main chat page -->
+            <div @click="closeSidebar($event)"
+                class=" w-full lg:w-10/12  h-full relative bg-gray-700">
+                <nav x-ref="navbar"
+                    class="text-cyan-50 flex justify-between items-center w-full  bg-gray-900 border-b-0 border-black h-20 ">
+                    <div @click="openSidebar()"
+                        class="flex m-2 cursor-pointer lg:cursor-text lg:pointer-events-none w-2/3 overflow-clip">
+                        <img class="mr-3 bg-yellow-100" src="images/member.svg"
+                            alt="Room Icon">
+                        <div class="flex flex-col uppercase">
+                            <h2 x-text="groupName">Room Name</h2>
+                            <p x-text="groupId" class="text-gray-400">Room
+                                ID</p>
+                        </div>
+                    </div>
+                    <!-- share-exit -->
+                    <div
+                        class="flex m-4 w-2/6 p-3 justify-end overflow-visible ">
+                        <img class="mr-2 cursor-pointer" src="images/share.svg"
+                            alt="share">
+                        <img class="mr-2 cursor-pointer" src="images/exit.svg"
+                            alt="exit">
+                        <img class="cursor-pointer" src="images/info.svg"
+                            alt="info">
+                    </div>
+                </nav>
+                <!-- main page -->
+                <main x-ref="chatBox" class="w-full ml-2 h-5/6 overflow-auto lg:h-5/6 p-3">
+                    <!-- message box -->
+                    <template x-for="(message,index) in messages" :key="index">
+                        <div
+                            x-bind:class="{'ml-auto rounded-l-2xl rounded-tr-none bg-gray-400 text-yellow-400' : message.memberid===parseInt(localStorage.getItem('memberid'))};initialText=false;"
+                            class="text-blue-500 whitespace-pre-line p-2 rounded-r-2xl border-gray-600 shadow-md mb-7 shadow-blue-200 rounded-b-2xl  font-mono h-fit break-words m-4 bg-gray-300 lg:w-fit lg:min-w-80 w-2/3 ">
+                            <h1 class="text-2xl uppercase font-bold " x-text="getMemberName(message.memberid)"></h1>
+                            <p class="text-black font-sans text-xl" x-text="message.content"></p>
+                        </div>
+                    </template>
 
-        
-    </div>
-    <!-- main chat page end -->
-</div>
-    <script>
+                    <div x-show="initialText"
+                        class="absolute top-1/3 left-1/3 transform -translate-x-1/3 -translate-y-1/3 mt-3 ">
+                        <h1 x-text="`Hello ${username}`"
+                            class="w-full text-4xl font-bold mb-4 md:text-5xl">Hello
+                            Username..</h1>
+                        <h2
+                            class="text-3xl text-gray-500 md:text-4xl">Rules</h2>
+                        <ul class="list-disc ">
+                            <li>Lorem ipsum dolor sit amet con</li>
+                            <li>Lorem ipsum dolor sit amet con</li>
+                            <li>Lorem ipsum dolor sit amet con</li>
+                            <li>Lorem ipsum dolor sit amet con</li>
+                        </ul>
+                    </div>
+
+                </main>
+                <div
+                    class="w-full absolute bottom-0 flex p-2  border-transparent shadow-lg shadow-blue-950 border-4 items-center">
+                    <textarea x-model="message"
+                        x-bind:style="{height:textAreaHeight}"
+                        x-on:input="updateHeight($event)"
+                        class="max-h-36 h-full resize-none border mr-2  border-gray-300 rounded-md p-2 w-full focus:outline-none focus:border-blue-100 overflow-auto text-xl lg:text-2xl"
+                        placeholder="Send a message.."></textarea>
+                    <img @click="sendMessage()" class="w-12 cursor-pointer"
+                        src="images/send.svg" alt="send">
+                </div>
+
+            </div>
+            <!-- main chat page end -->
+        </div>
+        <script>
 
         function app(){
 
             return {
                 ws:null,
+                localDB:null,
                 groupName:'Room Name',
                 groupId:'Room ID',
                 username:'Username',
@@ -124,23 +154,51 @@
                     }
                     this.ws=new WebSocket(`${this.wsURL}?id=${memberid}`);
                     this.ws.onopen=(e)=>{
-                        console.log("Connected to ",this.wsURL)
+                        console.log("Connected to ",this.wsURL);
+                        const openReq=window.indexedDB.open('Messages',1);
+
+                        openReq.onupgradeneeded=(event)=>{
+                            this.localDB=event.target.result;
+                            console.log(this.localDB);
+                            const objectStore=this.localDB.createObjectStore('message',{autoIncrement: true });
+                        }
+                        openReq.onsuccess=(event)=>{
+                            this.localDB=event.target.result;
+                            const transaction=this.localDB.transaction(['message'],'readonly');
+                            const objectStore=transaction.objectStore('message');
+                            const getAllReq=objectStore.getAll();
+                            getAllReq.onsuccess=(e)=>{
+                                const data=e.target.result;
+                                this.messages=data;
+                            }
+                        }
+                        openReq.onerror=(e)=>{
+                            console.log(e.target.error);
+                        }
+
                     }
                         
                     
                     this.ws.onmessage=(e)=>{
                         const data=JSON.parse(e.data);
                         console.log(data)
-                        if(data.initialMessage){
+                        if(data.updateMemberInfo){
                             this.members=data.members;
                             this.groupId=data.groupId;
                             this.groupName=data.groupName;
                             this.username=data.username;
+                            console.log(data.members)
 
                             localStorage.setItem("username",data.username);
                         }
                         else{
-                        this.messages.push(data);
+                        this.messages.push({memberid:parseInt(data.memberid),content:data.content});
+                        const transaction=this.localDB.transaction(['message'],'readwrite');
+                        const objectStore=transaction.objectStore('message');
+                        const addDataReq=objectStore.add({memberid:parseInt(data.memberid),content:data.content});
+                        addDataReq.onsuccess=(e)=>{
+                            console.log("MESSAGE ADDED SUCCESSFULLY!",e);
+                        }
                         }
 
                     }
@@ -156,19 +214,38 @@
                         this.ws.send(JSON.stringify({
                             memberid:memberid,
                             content:this.message,
-                            name:username,
                         }));
                         this.message='';
                         this.textAreaHeight='70px';
                         this.initialText=false;
+                   
+
                     }
+                },
+                getMemberName(memberid){
+                    let memberName=null;
+                    console.log(memberid)
+                    if(this.members.length>0){
+                        for(let i=0;i<this.members.length;i++){
+                            if(this.members[i].memberid=memberid){
+                                console.log(this.members[i])
+                                memberName=this.members[i].name;
+                                break;
+                            }
+                        }
+                    }
+                    if(!memberName){
+                        return "anonymous";
+                    }
+                    return memberName;
                 },
         }
     }
     window.addEventListener("beforeunload",(e)=>{
         // localStorage.removeItem("init")
-        localStorage.clear()
+        // localStorage.clear()
+        this.localDB.close();
     })
     </script>
-</body>
+    </body>
 </html>

@@ -15,7 +15,7 @@ class MyConsumer(AsyncConsumer):
        
         group_name = group.Name
         group_id = group.id
-        group_members = [{'id':member.id,'name':member.Name} for member in group.member_set.all()] 
+        group_members = [{'memberid':member.id,'name':member.Name} for member in group.member_set.all()] 
 
         return {'name':member.Name,'group_id':group_id,'group_name':group_name,'group_members':group_members}
 
@@ -33,7 +33,7 @@ class MyConsumer(AsyncConsumer):
         await self.send({
             'type':'websocket.send',
             'text':json.dumps({
-                'initialMessage':True,
+                'updateMemberInfo':True,
                 'members':member_info.get('group_members'),
                 'groupName':member_info.get('group_name'),
                 'groupId':member_info.get('group_id'),
@@ -43,7 +43,7 @@ class MyConsumer(AsyncConsumer):
 
     async def websocket_receive(self,e):
         data=json.loads(e['text'])
-        data['initialMessage']=False
+        data['updateMemberInfo']=False
         # member_info=await self.get_member_info(data['memberid'])
         # print(member_info)
         # data['name']=member_info.get('name')
