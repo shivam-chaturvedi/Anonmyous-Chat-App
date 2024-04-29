@@ -19,7 +19,7 @@
 
             <!-- sidebar start -->
             <div
-                x-bind:class="{'w-1/2 z-20 absolute h-full opacity-90 lg:relative lg:w-2/12 transition-all duration-300 ease-in-out':sidebar,'w-0 lg:w-2/12':!sidebar}"
+                x-bind:class="{'w-1/2 z-20 absolute h-full opacity-90 lg:relative lg:w-2/12 transition-all duration-300 ease-in-out ':sidebar,'w-0 lg:w-2/12 ':!sidebar}"
                 class="overflow-auto bg-gray-900 h-auto w-2/12 ">
 
                 <h1
@@ -32,13 +32,14 @@
                 <template x-for="(member,index) in members" :key="index">
                     <!-- member div -->
                     <div 
-                    x-bind:class="{'bg-cyan-400 text-green-900 uppercase font-bold text-3xl hover:bg-gray-200 sticky bottom-5':parseInt(localStorage.getItem('memberid'))===member.memberid}"
-                     class="w-auto text-white text-2xl overflow-auto h-auto flex items-center m-4 p-4 shadow hover:bg-black rounded-2xl cursor-pointer hover:shadow-md hover:shadow-blue-200">
+                    x-bind:class="{'bg-cyan-500 text-green-900 uppercase font-bold text-3xl hover:bg-gray-200 sticky  bottom-5':parseInt(localStorage.getItem('memberid'))===member.memberid}"
+                     class="w-auto text-white text-2xl overflow-auto h-auto flex items-center m-4 p-4 shadow  rounded-2xl ">
                         <!-- <img class="text-white rounded-full p-4 bg-yellow-300" src="images/member.svg" :alt="member"> -->
                         <p x-text="member.name[0] "
                             class="text-black pl-3 pr-3 pt-1 rounded-full h-12 w-12 text-center bg-purple-300 text-4xl font-bold uppercase"></p>
                         <p class="ml-4"
                             x-text="member.name"></p>
+                        <img x-show="parseInt(localStorage.getItem('memberid'))===member.memberid" class="text-sm ml-auto mr-4 cursor-pointer" src="/images/setting.svg" alt="setting">
                     </div>
                 </template>
             </div>
@@ -84,7 +85,7 @@
                         x-transition:leave-end="opacity-0 transform scale-90"
                         class="bg-white opacity-50 p-2 text-xs rounded-full font-mono font-semibold absolute right-5 -bottom-8 text-black">Leave Group</p>
                         
-                         <img  class="cursor-pointer" src="images/info.svg"
+                         <img @click="sendReport" class="cursor-pointer" src="images/info.svg"
                             alt="info">
                     </div>
                 </nav>
@@ -132,7 +133,64 @@
 
             </div>
             <!-- main chat page end -->
-        </div>Share Gr
+
+            <!-- report dialog -->
+            <div  x-show="reportDialog" class="bg-white absolute items-center top-1/2 left-1/2 uppercase flex flex-col rounded-md shadow-md transform -translate-x-1/2 -translate-y-1/2 p-5 text-xl lg:text-3xl w-4/5 lg:w-auto ">
+
+                <div class="flex w-full items-center">
+                    <h1 class="ml-4 text-3xl text-red-400 font-light">Report a  Problem</h1>
+                    <img title="close" @click="reportDialog=false" class=" h-7 ml-auto cursor-pointer hover:scale-110" src="/images/close.svg" alt="close">
+                </div>
+              
+                
+                <div class="flex mt-10  w-full justify-between">
+                    <button @click="reportBugDialog=true;reportDialog=false" class="m-2 border-2  text-lg bg-red-500 p-2 uppercase tracking-widest rounded-lg shadow-md hover:bg-red-700 hover:text-white hover:shadow-lg ">Report a bug</button>
+                    <button @click="reportMemberDialog=true;reportDialog=false" class="m-2  border-2 text-lg bg-red-500 p-1 uppercase tracking-widest rounded-lg shadow-md hover:bg-red-700 hover:text-white hover:shadow-lg ">Report a member</button>
+                </div>
+            </div>
+            <!-- report bug dialog -->
+            <div x-show="reportBugDialog" class="bg-white absolute top-1/2 left-1/2 text-center uppercase flex flex-col rounded-md shadow-md transform -translate-x-1/2 -translate-y-1/2 p-5">
+                <h1 class="text-3xl text-red-400 font-light text-md">oh shit!  You find a bug </h1>
+                <textarea x-model="reportBugText"  class="resize-none mt-5 mb-3 bg-gray-300 p-1 rounded-sm" rows="4" placeholder="Please ,Give Us Details About Issue"></textarea>
+                <p class="text-red-600 capitalize" x-text="errorMsg"></p>
+                <div class="flex justify-between">
+                    <button @click="reportBugDialog=false" class=" m-2 border-2 text-lg bg-red-500 p-2 uppercase tracking-widest rounded-lg shadow-md hover:bg-red-700 hover:text-white hover:shadow-lg ">cancel</button>
+                    <button @click="reportBug" class="m-2 border-2 text-lg bg-green-500 p-2 uppercase tracking-widest rounded-lg shadow-md hover:bg-green-700 hover:text-white hover:shadow-lg ">submit</button>
+                </div>
+            </div>
+
+            <!-- Thanks For Reporting Dialog -->
+            <div @click.away="thanksForReportDialog=false" x-show="thanksForReportDialog" class="bg-green-400 absolute top-1/2 left-1/2 text-center uppercase flex flex-col rounded-md shadow-md transform -translate-x-1/2 -translate-y-1/2 p-5">
+                <h1>Thanks For Your Report</h1>
+                <p x-text="thanksForReportDialogMessage"></p>
+            </div>
+
+            <!-- Report Member Dialog -->
+            <div x-show="reportMemberDialog" class="bg-white absolute top-1/2 left-1/2 text-center uppercase flex flex-col rounded-md shadow-md transform -translate-x-1/2 -translate-y-1/2 p-5 h-2/3 w-4/5">
+                <h1 class="text-3xl text-red-400 font-light text-md">Which Member You want to Report</h1>
+                
+                <div class="overflow-auto h-1/2 flex flex-col mt-4 p-2  bg-gray-700">
+                    <template x-for="(member,index) in members" :key="index">
+                        <label class="text-white flex bg-gray-600 p-2 m-2 rounded-md items-center">
+                            <input type="radio" :value="member.memberid" x-model="selectedMemberToReport">
+                            <span class="w-full text-center" x-text="member.name"></span>
+                        </label><br>
+                    </template>
+                </div>
+                
+                <p class="text-md font-serif capitalize h-1/6 overflow-auto  mt-8 ">If you encounter behavior that violates our community guidelines or makes you feel uncomfortable, please report it to us. Our team will review the report promptly and take appropriate action.
+                    By reporting, you help us maintain a safe and welcoming environment for everyone. Rest assured, your report will be handled confidentially.
+                    Thank you for helping us keep our community respectful and enjoyable for all users.</p>
+                
+
+                <p class="text-red-600 capitalize m-2" x-text="errorMsg"></p>
+                <div class="flex justify-between">
+                    <button @click="reportMemberDialog=false" class=" m-2 border-2 text-lg w-1/2 bg-red-500 p-2 uppercase tracking-widest rounded-lg shadow-md hover:bg-red-700 hover:text-white hover:shadow-lg ">cancel</button>
+                    <button @click="reportMember" class="m-2 border-2 w-1/2 text-lg bg-green-500 p-2 uppercase tracking-widest rounded-lg shadow-md hover:bg-green-700 hover:text-white hover:shadow-lg ">submit</button>
+                </div>
+            </div>
+            
+        </div>
         <script>
 
         function app(){
@@ -153,7 +211,16 @@
                 shareHover:false,
                 shareText:'Share Group',
                 shareLink:'http://localhost:8080/',
-            
+                reportDialog:false,
+                reportBugDialog:false,
+                reportMemberDialog:false,
+                reportBugText:'',
+                thanksForReportDialog:false,
+                errorMsg:'',
+                selectedMemberToReport:null,
+                thanksForReportDialogMessage:'',
+        
+
                 updateHeight(e){
                     if(e.target.scrollHeight===142){
                         this.textAreaHeight='70px';
@@ -203,12 +270,17 @@
                         }
 
                     }
+                    this.ws.onerror=()=>{
+                        setTimeout(()=>{
+                        this.initialize();
+                        },1000)
+                    }
                         
                     
                     this.ws.onmessage=(e)=>{
                         const data=JSON.parse(e.data);
                         if(data.error){
-                            console.log(data);
+                            // console.log(data);
                             localStorage.clear();
                             window.indexedDB.deleteDatabase("Messages")
                             window.location.replace("/")
@@ -295,6 +367,43 @@
                         // Error message
                         alert("Error copying link: " + error);
                     });
+                },
+                sendReport(){
+                  this.reportDialog=true;  
+                },
+                reportBug(){
+                    if(!(this.reportBugText.trim()==='')){
+                        // send bug report here 
+                        this.reportBugDialog=false;
+                        this.reportBugText=''
+                        this.errorMsg=''
+                        this.thanksForReportDialogMessage="We will Fix It Soon !!";
+                        this.thanksForReportDialog=true;
+
+                    }
+                    else{
+                        this.errorMsg='Please,Describe The Issue !!';
+                    }
+                    setTimeout(() => {
+                        this.thanksForReportDialog=false;
+                    }, 2000);
+                },
+                reportMember(){
+                    // console.log(this.selectedMemberToReport)
+                    if(!this.selectedMemberToReport){
+                        this.errorMsg='Please,Select a Member To Report !!';
+                        return;
+                    }
+                    else{
+                        this.errorMsg='';
+                        this.thanksForReportDialogMessage="Member Reported !!";
+                        this.thanksForReportDialog=true;
+                        this.reportMemberDialog=false;
+                    }
+
+                    setTimeout(() => {
+                        this.thanksForReportDialog=false;
+                    }, 2000);
                 },
         }
     }
