@@ -15,7 +15,7 @@
     </head>
     <body class="flex flex-col  bg-gray-900">
         <div x-data="app()" x-init="initialize()"
-            class="relative flex p-2 w-screen h-screen">
+            class=" flex p-2 absolute top-0 left-0 w-screen h-screen">
 
             <!-- sidebar start -->
             <div
@@ -23,11 +23,11 @@
                 class="overflow-auto bg-gray-900 h-auto w-2/12 ">
 
                 <h1
-                    class="sticky top-0 z-20 text-white font-bold text-xl lg:text-2xl text-center p-2 mt-4 mb-2 bg-gray-800">Total
+                    class="sticky top-0 z-20 text-white font-bold text-xl lg:text-2xl text-center p-4 mt-4 mb-2 bg-gray-800" x-text="`Total Members: ${members.length}`">Total
                     Members:X</h1>
 
                 <h2
-                    class="sticky top-20 z-20 text-white text-lg font-semibold text-center">Members</h2>
+                    class="sticky top-20 z-20 bg-gray-600 text-white text-lg font-semibold text-center">Members</h2>
 
                 <template x-for="(member,index) in members" :key="index">
                     <!-- member div -->
@@ -62,20 +62,29 @@
                     <!-- share-exit -->
                     <div 
                         class="flex m-4 w-2/6 p-3 justify-end overflow-visible relative">
-                        <img class="mr-2 cursor-pointer" src="images/share.svg"
+                        <img x-on:mouseover="shareHover=true" x-on:mouseout="shareHover=false" @click="shareGroup" class="mr-2 cursor-pointer hover:bg-gray-700 hover:rounded-full p-2 " src="images/share.svg"
                             alt="share">
-                        <img x-on:mouseover="exitHover=true" x-on:mouseout="exitHover=false"  @click="exitGroup" class=" mr-2 cursor-pointer hover:bg-red-700 hover:rounded-full hover:p-2 transition-all ease-in-out duration-200" src="images/exit.svg"
-                            alt="exit">
-                        <p x-show="exitHover"
-                        x-transition:enter="transition ease-out duration-250"
+                        <p x-show="shareHover"     
+                        x-transition:enter="transition ease-out duration-300"
                         x-transition:enter-start="opacity-0 transform scale-90"
                         x-transition:enter-end="opacity-100 transform scale-100"
-                        x-transition:leave="transition ease-in duration-100"
+                        x-transition:leave="transition ease-in duration-300"
                         x-transition:leave-start="opacity-100 transform scale-100"
                         x-transition:leave-end="opacity-0 transform scale-90"
-                         class=" bg-white p-2 text-xs rounded-full font-mono font-semibold absolute -bottom-8 text-black">leave group</p>
+                        class="bg-white opacity-50 p-2 text-xs rounded-full font-mono font-semibold absolute right-20 -bottom-8 text-black transition-all duration-200 ease-linear " x-text="shareText"></p>
                         
-                         <img class="cursor-pointer" src="images/info.svg"
+                        <img x-on:mouseover="exitHover=true" x-on:mouseout="exitHover=false"  @click="exitGroup" class=" mr-2 cursor-pointer  hover:bg-gray-700 hover:rounded-full p-2 transition-all ease-in-out duration-200" src="images/exit.svg"
+                            alt="exit">
+                        <p x-show="exitHover" 
+                        x-transition:enter="transition ease-out duration-300"
+                        x-transition:enter-start="opacity-0 transform scale-90"
+                        x-transition:enter-end="opacity-100 transform scale-100"
+                        x-transition:leave="transition ease-in duration-300"
+                        x-transition:leave-start="opacity-100 transform scale-100"
+                        x-transition:leave-end="opacity-0 transform scale-90"
+                        class="bg-white opacity-50 p-2 text-xs rounded-full font-mono font-semibold absolute right-5 -bottom-8 text-black">Leave Group</p>
+                        
+                         <img  class="cursor-pointer" src="images/info.svg"
                             alt="info">
                     </div>
                 </nav>
@@ -96,17 +105,17 @@
                     </template>
 
                     <div x-show="initialText"
-                        class="absolute top-1/3 left-1/3 transform -translate-x-1/3 -translate-y-1/3 mt-3 ">
+                        class="p-2 bg-gray-600 h-1/2 overflow-auto absolute top-1/3 left-1/3 transform -translate-x-1/3 -translate-y-1/3 mt-3 ">
                         <h1 x-text="`Hello ${getMemberName(parseInt(localStorage.getItem('memberid')))}`"
-                            class="w-full text-4xl font-bold mb-4 md:text-5xl">Hello
+                            class="w-full lg:text-7xl text-purple-300 opacity-70 font-bold mb-4 text-5xl">Hello
                             Username..</h1>
-                        <h2
-                            class="text-3xl text-gray-500 md:text-4xl">Rules</h2>
-                        <ul class="list-disc ">
-                            <li>Lorem ipsum dolor sit amet con</li>
-                            <li>Lorem ipsum dolor sit amet con</li>
-                            <li>Lorem ipsum dolor sit amet con</li>
-                            <li>Lorem ipsum dolor sit amet con</li>
+                        <h2 class=" text-red-500 mt-10 text-4xl lg:text-5xl ">Rules</h2>
+                        <ul class="list-decimal text-white  text-xl ">
+                            <li class="ml-5 mt-7 break-words"><strong>Respectful Communication:</strong> Be polite and respectful to others.</li>
+                            <li class="ml-5 mt-5 break-words"><strong>Privacy and Security:</strong> Protect user's privacy and data security.</li>
+                            <li class="ml-5 mt-5 break-words"><strong>Moderation and Reporting:</strong> Monitor chat content and report inappropriate behavior.</li>
+                            <li class="ml-5 mt-5 break-words"><strong>Spam or Solicitation:</strong> Avoid spamming and unsolicited promotions.</li>
+                            <li class="ml-5 mt-5 break-words"><strong>Clear Terms of Service:</strong> Communicate clear guidelines and consequences for rule violations.</li>
                         </ul>
                     </div>
 
@@ -123,7 +132,7 @@
 
             </div>
             <!-- main chat page end -->
-        </div>
+        </div>Share Gr
         <script>
 
         function app(){
@@ -137,10 +146,13 @@
                 message:'',
                 messages:[],
                 members:[],
-                sidebar:true,
+                sidebar:false,
                 wsURL:'ws://localhost:8000/ws',
                 textAreaHeight:'70px',
                 exitHover:false,
+                shareHover:false,
+                shareText:'Share Group',
+                shareLink:'http://localhost:8080/',
             
                 updateHeight(e){
                     if(e.target.scrollHeight===142){
@@ -248,7 +260,7 @@
                         }
                     }
                     if(!memberName){
-                        return "anonmyous"
+                        return "anonymous";
                     }
                     return memberName;
                     
@@ -266,6 +278,23 @@
                     window.indexedDB.deleteDatabase("Messages")
                     window.location.replace("/")
 
+                },
+                shareGroup(){
+                    navigator.clipboard.writeText(this.shareLink)
+                    .then(()=> {
+                        // Success message
+                        this.shareText="Link Copied SuccessFully!"
+                        this.shareHover=true;
+                        setTimeout(()=>{
+                            this.shareText="Share Group";
+                            this.shareHover=false;
+                        },1000)
+                       
+                    })
+                    .catch(function(error) {
+                        // Error message
+                        alert("Error copying link: " + error);
+                    });
                 },
         }
     }
