@@ -31,14 +31,14 @@
 
                 <template x-for="(member,index) in members" :key="index">
                     <!-- member div -->
-                    <div
-                        class="w-auto  overflow-auto transition-all duration-300 ease-in-outo h-auto flex items-center m-4 p-4 shadow hover:bg-black rounded-2xl cursor-pointer hover:shadow-md hover:shadow-blue-200">
+                    <div 
+                    x-bind:class="{'bg-cyan-400 text-green-900 uppercase font-bold text-3xl hover:bg-gray-200 sticky bottom-5':parseInt(localStorage.getItem('memberid'))===member.memberid}"
+                     class="w-auto text-white text-2xl overflow-auto h-auto flex items-center m-4 p-4 shadow hover:bg-black rounded-2xl cursor-pointer hover:shadow-md hover:shadow-blue-200">
                         <!-- <img class="text-white rounded-full p-4 bg-yellow-300" src="images/member.svg" :alt="member"> -->
-                        <p x-text="member.name[0]"
-                            class="text-black rounded-full h-12 w-12 text-center bg-purple-300 text-4xl font-bold uppercase"></p>
-                        <p class="text-white text-xl ml-4"
+                        <p x-text="member.name[0] "
+                            class="text-black pl-3 pr-3 pt-1 rounded-full h-12 w-12 text-center bg-purple-300 text-4xl font-bold uppercase"></p>
+                        <p class="ml-4"
                             x-text="member.name"></p>
-
                     </div>
                 </template>
             </div>
@@ -60,13 +60,22 @@
                         </div>
                     </div>
                     <!-- share-exit -->
-                    <div
-                        class="flex m-4 w-2/6 p-3 justify-end overflow-visible ">
+                    <div 
+                        class="flex m-4 w-2/6 p-3 justify-end overflow-visible relative">
                         <img class="mr-2 cursor-pointer" src="images/share.svg"
                             alt="share">
-                        <img class="mr-2 cursor-pointer" src="images/exit.svg"
+                        <img x-on:mouseover="exitHover=true" x-on:mouseout="exitHover=false"  @click="exitGroup" class=" mr-2 cursor-pointer hover:bg-red-700 hover:rounded-full hover:p-2 transition-all ease-in-out duration-200" src="images/exit.svg"
                             alt="exit">
-                        <img class="cursor-pointer" src="images/info.svg"
+                        <p x-show="exitHover"
+                        x-transition:enter="transition ease-out duration-250"
+                        x-transition:enter-start="opacity-0 transform scale-90"
+                        x-transition:enter-end="opacity-100 transform scale-100"
+                        x-transition:leave="transition ease-in duration-100"
+                        x-transition:leave-start="opacity-100 transform scale-100"
+                        x-transition:leave-end="opacity-0 transform scale-90"
+                         class=" bg-white p-2 text-xs rounded-full font-mono font-semibold absolute -bottom-8 text-black">leave group</p>
+                        
+                         <img class="cursor-pointer" src="images/info.svg"
                             alt="info">
                     </div>
                 </nav>
@@ -88,7 +97,7 @@
 
                     <div x-show="initialText"
                         class="absolute top-1/3 left-1/3 transform -translate-x-1/3 -translate-y-1/3 mt-3 ">
-                        <h1 x-text="`Hello ${username}`"
+                        <h1 x-text="`Hello ${getMemberName(parseInt(localStorage.getItem('memberid')))}`"
                             class="w-full text-4xl font-bold mb-4 md:text-5xl">Hello
                             Username..</h1>
                         <h2
@@ -124,14 +133,14 @@
                 localDB:null,
                 groupName:'Room Name',
                 groupId:'Room ID',
-                username:'Username',
                 initialText:true,
                 message:'',
                 messages:[],
                 members:[],
-                sidebar:false,
+                sidebar:true,
                 wsURL:'ws://localhost:8000/ws',
                 textAreaHeight:'70px',
+                exitHover:false,
             
                 updateHeight(e){
                     if(e.target.scrollHeight===142){
@@ -186,24 +195,28 @@
                     
                     this.ws.onmessage=(e)=>{
                         const data=JSON.parse(e.data);
-                        
-                        if(data.updateMemberInfo){
+                        if(data.error){
+                            console.log(data);
+                            localStorage.clear();
+                            window.indexedDB.deleteDatabase("Messages")
+                            window.location.replace("/")
+                        }
+                        else if(data.updateMemberInfo){
                             this.members=data.members;
                             this.groupId=data.groupId;
                             this.groupName=data.groupName;
-                            this.username=data.username;
                             console.log(data.members)
 
                         }
                         else{
-                        const message={memberid:parseInt(data.memberid),content:data.content.trim()}
-                        this.messages.push(message);
-                        const transaction=this.localDB.transaction(['message'],'readwrite');
-                        const objectStore=transaction.objectStore('message');
-                        const addDataReq=objectStore.add(message);
-                        addDataReq.onsuccess=(e)=>{
-                            // console.log("MESSAGE ADDED SUCCESSFULLY!",e);
-                        }
+                            const message={memberid:parseInt(data.memberid),content:data.content.trim()}
+                            this.messages.push(message);
+                            const transaction=this.localDB.transaction(['message'],'readwrite');
+                            const objectStore=transaction.objectStore('message');
+                            const addDataReq=objectStore.add(message);
+                            addDataReq.onsuccess=(e)=>{
+                                // console.log("MESSAGE ADDED SUCCESSFULLY!",e);
+                            }
                         }
 
                     }
@@ -235,10 +248,24 @@
                         }
                     }
                     if(!memberName){
-                        return "ananmyous"
+                        return "anonmyous"
                     }
                     return memberName;
                     
+                },
+                exitGroup(){
+                    const memberid=localStorage.getItem("memberid");
+                    this.ws.send(
+                        JSON.stringify({
+                          memberid:memberid,
+                          delete:true,
+                        })
+                    );
+
+                    localStorage.clear();
+                    window.indexedDB.deleteDatabase("Messages")
+                    window.location.replace("/")
+
                 },
         }
     }
