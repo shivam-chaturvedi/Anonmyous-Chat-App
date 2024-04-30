@@ -19,8 +19,10 @@
 
             <!-- sidebar start -->
             <div
-                x-bind:class="{'w-1/2 z-20 absolute h-full opacity-90 lg:relative lg:w-2/12 transition-all duration-300 ease-in-out ':sidebar,'w-0 lg:w-2/12 ':!sidebar}"
-                class="overflow-auto bg-gray-900 h-auto w-2/12 ">
+                style="height: 90%;"
+                x-bind:class="{'w-1/2 z-20 absolute opacity-90 lg:relative lg:w-2/12 transition-all duration-300 ease-in-out ':sidebar,'w-0 lg:w-2/12':!sidebar}"
+
+                class="overflow-auto bg-gray-900  ">
 
                 <h1
                     class="sticky top-0 z-20 text-white font-bold text-xl lg:text-2xl text-center p-4 mt-4 mb-2 bg-gray-800" x-text="`Total Members: ${members.length}`">Total
@@ -32,18 +34,33 @@
                 <template x-for="(member,index) in members" :key="index">
                     <!-- member div -->
                     <div 
-                    x-bind:class="{'bg-cyan-500 text-green-900 uppercase font-bold text-3xl hover:bg-gray-200 sticky  bottom-5':parseInt(localStorage.getItem('memberid'))===member.memberid}"
+                    x-bind:class="{'hidden':parseInt(localStorage.getItem('memberid'))===member.memberid}"
                      class="w-auto text-white text-2xl overflow-auto h-auto flex items-center m-4 p-4 shadow  rounded-2xl ">
                         <!-- <img class="text-white rounded-full p-4 bg-yellow-300" src="images/member.svg" :alt="member"> -->
                         <p x-text="member.name[0] "
                             class="text-black pl-3 pr-3 pt-1 rounded-full h-12 w-12 text-center bg-purple-300 text-4xl font-bold uppercase"></p>
                         <p class="ml-4"
                             x-text="member.name"></p>
-                        <img x-show="parseInt(localStorage.getItem('memberid'))===member.memberid" class="text-sm ml-auto mr-4 cursor-pointer" src="/images/setting.svg" alt="setting">
                     </div>
+
                 </template>
+                
             </div>
+
             <!-- sidebar end -->
+            <!-- current member div start-->
+
+            <div style="height: 10%;" 
+            x-bind:class="{'w-0 lg:w-2/12 p-0 ':!sidebar}"
+            class="overflow-hidden flex text-white lg:w-2/12 w-1/2 transition-all duration-300 ease-out bg-gray-800 items-center rounded-md  absolute lg:left-0 bottom-1  text-3xl z-50">
+            
+            <p x-text="getMemberName(parseInt(localStorage.getItem('memberid')))[0]"
+            class=" text-black ml-2 p-1 rounded-full h-12 w-12 text-center bg-purple-300 text-4xl font-bold uppercase"></p>
+            <p class="ml-4 mt-12 mb-12 h-full overflow-auto " x-text="getMemberName(parseInt(localStorage.getItem('memberid')))"></p>
+            <img class="ml-auto mr-3" src="/images/setting.svg" alt="setting">
+            </div>
+
+            <!-- current member div end-->
 
             <!-- main chat page -->
             <div @click="closeSidebar($event)"
@@ -72,9 +89,9 @@
                         x-transition:leave="transition ease-in duration-300"
                         x-transition:leave-start="opacity-100 transform scale-100"
                         x-transition:leave-end="opacity-0 transform scale-90"
-                        class="bg-white opacity-50 p-2 text-xs rounded-full font-mono font-semibold absolute right-20 -bottom-8 text-black transition-all duration-200 ease-linear " x-text="shareText"></p>
+                        class="bg-white opacity-50 p-2 text-xs rounded-full font-mono font-semibold absolute right-28 -bottom-8 text-black transition-all duration-200 ease-linear " x-text="shareText"></p>
                         
-                        <img x-on:mouseover="exitHover=true" x-on:mouseout="exitHover=false"  @click="exitGroup" class=" mr-2 cursor-pointer  hover:bg-gray-700 hover:rounded-full p-2 transition-all ease-in-out duration-200" src="images/exit.svg"
+                        <img x-on:mouseover="exitHover=true" x-on:mouseout="exitHover=false"  @click="exitGroup" class=" mr-2 cursor-pointer  hover:bg-gray-700 hover:rounded-full p-2  transition-all ease-in-out duration-200" src="images/exit.svg"
                             alt="exit">
                         <p x-show="exitHover" 
                         x-transition:enter="transition ease-out duration-300"
@@ -83,10 +100,20 @@
                         x-transition:leave="transition ease-in duration-300"
                         x-transition:leave-start="opacity-100 transform scale-100"
                         x-transition:leave-end="opacity-0 transform scale-90"
-                        class="bg-white opacity-50 p-2 text-xs rounded-full font-mono font-semibold absolute right-5 -bottom-8 text-black">Leave Group</p>
+                        class="bg-white opacity-50 p-2 text-xs rounded-full font-mono font-semibold absolute right-14 -bottom-8 text-black">Leave Group</p>
                         
-                         <img @click="sendReport" class="cursor-pointer" src="images/info.svg"
+                         <img x-on:mouseover="reportHover=true" x-on:mouseout="reportHover=false" @click="sendReport" class=" mr-2 cursor-pointer  hover:bg-gray-700 hover:rounded-full p-3  transition-all ease-in-out duration-200" src="images/info.svg"
                             alt="info">
+                        <p x-show="reportHover"     
+                        x-transition:enter="transition ease-out duration-300"
+                        x-transition:enter-start="opacity-0 transform scale-90"
+                        x-transition:enter-end="opacity-100 transform scale-100"
+                        x-transition:leave="transition ease-in duration-300"
+                        x-transition:leave-start="opacity-100 transform scale-100"
+                        x-transition:leave-end="opacity-0 transform scale-90"
+                        class="bg-white opacity-50 p-2 text-xs rounded-full font-mono font-semibold absolute -bottom-8 text-black transition-all duration-200 ease-linear " >Report</p>
+                            
+                      
                     </div>
                 </nav>
                 <!-- main page -->
@@ -171,9 +198,9 @@
                 
                 <div class="overflow-auto h-1/2 flex flex-col mt-4 p-2  bg-gray-700">
                     <template x-for="(member,index) in members" :key="index">
-                        <label class="text-white flex bg-gray-600 p-2 m-2 rounded-md items-center">
+                        <label class="text-white flex bg-gray-600 p-2 m-2 rounded-md items-center cursor-pointer hover:bg-gray-500">
                             <input type="radio" :value="member.memberid" x-model="selectedMemberToReport">
-                            <span class="w-full text-center" x-text="member.name"></span>
+                            <span class="w-full text-center" x-text="member.name" ></span>
                         </label><br>
                     </template>
                 </div>
@@ -209,6 +236,7 @@
                 textAreaHeight:'70px',
                 exitHover:false,
                 shareHover:false,
+                reportHover:false,
                 shareText:'Share Group',
                 shareLink:'http://localhost:8080/',
                 reportDialog:false,
@@ -355,7 +383,7 @@
                     navigator.clipboard.writeText(this.shareLink)
                     .then(()=> {
                         // Success message
-                        this.shareText="Link Copied SuccessFully!"
+                        this.shareText="Link Copied"
                         this.shareHover=true;
                         setTimeout(()=>{
                             this.shareText="Share Group";
