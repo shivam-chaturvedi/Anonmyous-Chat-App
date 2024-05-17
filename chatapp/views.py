@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.http import JsonResponse
-from ChatApp.models import Member,Groups
+from ChatApp.models import *
 from django.views.decorators.csrf import csrf_exempt
 import json
 

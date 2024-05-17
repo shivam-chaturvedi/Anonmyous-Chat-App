@@ -48,9 +48,19 @@ class MyConsumer(AsyncConsumer):
             return {'error':str(e)}
         
     @database_sync_to_async
+    def get_report_count(self,memberid):
+        try:
+            member=Member.objects.get(id=memberid)
+            return {'reportCount':member.ReportCount}
+        except Exception as e:
+            return {'error':str(e)}
+    
+        
+    @database_sync_to_async
     def report_member(self,reportedMember,reportedBy):
         try:
             member=Member.objects.get(id=reportedMember)
+            group=member.Group
             reported_by=Member.objects.get(id=reportedBy)
             ReportedBYList=Report.objects.filter(reported_member=member)
             
@@ -132,11 +142,24 @@ class MyConsumer(AsyncConsumer):
                 
                 await self.channel_layer.group_discard(self.group_id,self.channel_name)
 
+        elif (data.get('getReportCount',None)):
+            # print("getting")
+            res=await self.get_report_count(int(data.get('getReportCount')))
+            # print(res)
+            if(res.get("reportCount",None)):
+                await self.send({
+                    'type':'websocket.send',
+                    'text':json.dumps(res),
+                })
+        
+            else:
+                pass
+
         elif (data.get('reportMember',None)):
             reportedMember=data.get('reportMember')
             reportedBy=data.get("reportedBy")
             res=await self.report_member(reportedMember,reportedBy)
-            print(res)
+            # print(res)
             if(res.get("alreadyReported",None)):
                 await self.channel_layer.group_send(self.group_id,{
                     'type':'chat.message',

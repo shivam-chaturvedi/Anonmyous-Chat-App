@@ -88,7 +88,7 @@
                     </div>
                     <!-- share-exit -->
                     <div 
-                        class="flex m-4 w-2/6 p-3 justify-end overflow-visible relative">
+                        class="flex w-2/6 p-3 justify-end overflow-visible relative">
                         <img x-on:mouseover="shareHover=true" x-on:mouseout="shareHover=false" @click="shareGroup" class="mr-2 cursor-pointer hover:bg-gray-700 hover:rounded-full p-2 " src="images/share.svg"
                             alt="share">
                         <p x-show="shareHover"     
@@ -148,8 +148,9 @@
 
                     </template>
 
+                    <!-- initialText -->
                     <div x-show="initialText"
-                        class="p-2 bg-gray-600 h-1/2 overflow-auto absolute top-1/3 left-1/3 transform -translate-x-1/3 -translate-y-1/3 mt-3 ">
+                        class="p-2 bg-gray-600 h-1/2 w-1/2 overflow-auto absolute top-1/3 left-1/3 transform -translate-x-1/3 -translate-y-1/3 mt-3 ">
                         <h1 x-text="`Hello ${getMemberName(parseInt(localStorage.getItem('memberid')))}`"
                             class="w-full lg:text-7xl text-purple-300 opacity-70 font-bold mb-4 text-5xl">Hello
                             Username..</h1>
@@ -230,7 +231,7 @@
                         <label 
                         
                         x-bind:class="{'hidden':member.memberid===parseInt(localStorage.getItem('memberid'))}"
-                        class="text-white flex bg-gray-600 p-2 m-2 rounded-md items-center cursor-pointer hover:bg-gray-500">
+                        class="text-white overflow-auto flex bg-gray-600 p-2 m-2 rounded-md items-center cursor-pointer hover:bg-gray-500">
                             <input type="radio" :value="member.memberid" x-model="selectedMemberToReport">
                             <span class="w-full text-center" x-text="member.name" ></span>
                         </label><br>
@@ -304,13 +305,23 @@
                     }
                 },
                 initialize(){
+
                     const memberid=localStorage.getItem("memberid");
                     if(memberid===null){
                         window.location.replace("/")
                     }
+                    
                     this.ws=new WebSocket(`${this.wsURL}?id=${memberid}`);
                     this.ws.onopen=(e)=>{
                         // console.log("Connected to ",this.wsURL);
+                        if(localStorage.getItem("kicked")){
+                            this.exitGroup();
+                        }
+                        this.ws.send(JSON.stringify(
+                        {
+                            getReportCount:localStorage.getItem("memberid"),
+                        }
+                    ))
                         const openReq=window.indexedDB.open('Messages',1);
 
                         openReq.onupgradeneeded=(event)=>{
@@ -344,11 +355,18 @@
                     
                     this.ws.onmessage=(e)=>{
                         const data=JSON.parse(e.data);
+                        console.log(data)
                         if(data.error){
                             // console.log(data);
                             localStorage.clear();
                             window.indexedDB.deleteDatabase("Messages")
                             window.location.replace("/")
+                        }
+                        else if(data.reportCount>-1){
+                            // console.log(data.reportCount,typeof(data.reportCount))
+                            if(data.reportCount>=this.members.length/2){
+                                this.exitGroup()
+                            }
                         }
                         else if(data.alreadyReported){
                             this.errorMsg="You have already reported this member";
@@ -357,9 +375,10 @@
                         else if(data.reportedMember){
                             
                             if(parseInt(localStorage.getItem("memberid"))==data.reportedMember){
-                                
+                                // console.log("reported")
                                 if(data.reportCount>=this.members.length/2){
                                     this.isReported=true;
+                                    localStorage.setItem("kicked",true)
                                     let timeremaining=10;
 
                                     const countdown=setInterval(()=>{
@@ -534,6 +553,7 @@
         }
     }
     window.addEventListener("beforeunload",(e)=>{
+        
         // this.localDB.close();
         // window.indexedDB.deleteDatabase("Messages")
         // localStorage.clear();
