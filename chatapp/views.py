@@ -15,8 +15,7 @@ def home(req):
                 group_name=json_data.get('groupName')
                 group_limit=int(json_data.get('groupLimit'))
                 Group=Groups.objects.create(Name=group_name,Limit=group_limit)
-                Group.save()
-                member=Member.objects.create(Name=username,Group=Group)
+                member=Member.objects.create(Name=username,Group=Group,Role="admin")
                 return JsonResponse({'memberid':member.id},status=200)
             else:
                 group_id=json_data.get("groupId")

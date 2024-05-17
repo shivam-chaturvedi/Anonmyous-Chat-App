@@ -14,12 +14,11 @@
         <script defer
             src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     </head>
-    <body class="flex flex-col  bg-gray-900">
-
+    <body class="flex flex-col bg-gray-900">
+                            
         <div x-data="app()" x-init="initialize()"
             class=" flex p-2 absolute top-0 left-0 w-full h-full">
 
-            
             <!-- sidebar start -->
             <div style="height: 98%;"
                 x-bind:class="{'w-1/2 z-20 absolute  lg:relative lg:w-2/12 transition-all duration-300 ease-in-out ':sidebar,'w-0  lg:w-2/12':!sidebar}"
@@ -37,13 +36,16 @@
                 <template x-for="(member,index) in members" :key="index">
                     <!-- member div -->
                     <div 
-                    x-bind:class="{'sticky bottom-0 bg-gray-600  rounded-sm ': parseInt(localStorage.getItem('memberid'))===member.memberid}"
-                     class="w-full text-white text-2xl overflow-auto h-auto flex items-center mt-2 mr-2  p-2 shadow  rounded-2xl ">
+                    x-bind:class="{'sticky bottom-0 bg-gray-800  rounded-sm ': parseInt(localStorage.getItem('memberid'))===member.memberid}"
+                     class="w-full  text-white text-2xl overflow-auto h-auto flex items-center mt-2 mr-2  p-2 shadow  rounded-2xl ">
                         <!-- <img class="text-white rounded-full p-4 bg-yellow-300" src="images/member.svg" :alt="member"> -->
                         <p x-text="member.name[0] "
                             class="text-black pl-3 pr-3 pt-1 rounded-full h-12 w-12 text-center bg-purple-300 text-4xl font-bold uppercase"></p>
-                        <p class="ml-4"
+                        <p class="ml-4  w-2/3  overflow-auto"
                             x-text="member.name"></p>
+
+                        <img x-show="isAdmin && parseInt(localStorage.getItem('memberid'))!==member.memberid" class="cursor-pointer ml-auto " width="20px" height="20px" title="Kick"  @click="kickout(member.memberid)"   src="images/kick.svg" alt="kick">
+                            
                         <!-- <img 
                         x-on:click="changeSetting"
                         x-bind:class="{'hidden':(parseInt(localStorage.getItem('memberid'))!==member.memberid)}"
@@ -52,8 +54,6 @@
 
                 </template>
             
-                
-
             </div>
 
             <!-- sidebar end -->
@@ -129,6 +129,7 @@
                 <main style="height: 80%"
                  x-ref="chatBox" class="bg-slate-600 w-full ml-2  overflow-auto lg:h-5/6 p-3">
                     <!-- message box -->
+                
                     <template x-for="(message,index) in messages"  :key="index">
                         <div style="line-height: 0%;max-width: 70%;"
                             x-bind:class="{'ml-auto rounded-l-2xl rounded-tr-none ' : message.memberid===parseInt(localStorage.getItem('memberid'))};initialText=false;"
@@ -203,6 +204,17 @@
                 </div>
             </div>
 
+
+            <!-- You Have been reported by mor ethan 50% members div -->
+            <div x-show="isReported" style="background-color: rgba(255, 0, 0, 0.979);" class=" text-white absolute top-1/2 left-1/2 text-center uppercase flex flex-col rounded-md shadow-md transform -translate-x-1/2 -translate-y-1/2 p-5 z-50">
+                <h class="text-2xl font-bold">More than 50% of the members have reported you</h1>
+                <hr>
+                <br>
+                <p class="text-lg font-thin " x-text="reportedMemberMessage">You'll get kicked after 10 Seconds</p>
+            </div>
+            
+            
+
             <!-- Thanks For Reporting Dialog -->
             <div @click.away="thanksForReportDialog=false" x-show="thanksForReportDialog" class="bg-green-400 absolute top-1/2 left-1/2 text-center uppercase flex flex-col rounded-md shadow-md transform -translate-x-1/2 -translate-y-1/2 p-5">
                 <h1>Thanks For Your Report</h1>
@@ -210,7 +222,7 @@
             </div>
 
             <!-- Report Member Dialog -->
-            <div x-show="reportMemberDialog" class="bg-white absolute top-1/2 left-1/2 text-center uppercase flex flex-col rounded-md shadow-md transform -translate-x-1/2 -translate-y-1/2 p-5 h-2/3 w-4/5">
+            <div x-show="reportMemberDialog" class="bg-white absolute top-1/2 left-1/2 z-40 text-center uppercase flex flex-col rounded-md shadow-md transform -translate-x-1/2 -translate-y-1/2 p-5 h-2/3 w-4/5">
                 <h1 class="text-3xl text-red-400 font-light text-md">Which Member You want to Report</h1>
                 
                 <div class="overflow-auto h-1/2 flex flex-col mt-4 p-2  bg-gray-700">
@@ -268,6 +280,9 @@
                 selectedMemberToReport:null,
                 thanksForReportDialogMessage:'',
                 currentMemberMessage:null,
+                isAdmin:false,
+                isReported:false,
+                reportedMemberMessage:"You'll get kicked after 10 Seconds",
                 
         
 
@@ -335,12 +350,53 @@
                             window.indexedDB.deleteDatabase("Messages")
                             window.location.replace("/")
                         }
+                        else if(data.alreadyReported){
+                            this.errorMsg="You have already reported this member";
+                           
+                        }
+                        else if(data.reportedMember){
+                            
+                            if(parseInt(localStorage.getItem("memberid"))==data.reportedMember){
+                                
+                                if(data.reportCount>=this.members.length/2){
+                                    this.isReported=true;
+                                    let timeremaining=10;
+
+                                    const countdown=setInterval(()=>{
+                                        timeremaining--;
+                                        this.reportedMemberMessage=`You'll get kicked after ${timeremaining} Seconds`;
+                                        if(timeremaining<=0){
+                                            this.exitGroup();
+                                            clearInterval(countdown);
+                                        }
+                                    },1000);
+                
+                                    // console.log("You Have Been Reported by more than 50% members ")
+                                }
+                            }
+                        }
                         else if(data.updateMemberInfo){
+                            // console.log("needs update")
                             this.members=data.members;
                             this.groupId=data.groupId;
                             this.groupName=data.groupName;
                             console.log(data.members)
-
+                            this.members.forEach((member)=>{
+                                if(member.memberid===parseInt(localStorage.getItem("memberid"))){
+                                    if(member.role==='admin'){
+                                        this.isAdmin=true;
+                                    }
+                                }
+                            })
+                            for(let i=0;i<this.members.length;i++){
+                                if(this.members[i].memberid===parseInt(localStorage.getItem("memberid"))){
+                                    return;                                    
+                                }
+                            };
+                            localStorage.clear();        
+                            window.indexedDB.deleteDatabase("Messages");
+                            window.location.replace("/");
+                            
                         }
                         else{
                             const message={memberid:parseInt(data.memberid),content:data.content.trim()}
@@ -367,7 +423,7 @@
                             content:this.message,
                         }));
                         this.message='';
-                        this.textAreaHeight='70px';
+                        this.textAreaHeight='60px';
                         this.initialText=false;
                    
 
@@ -447,14 +503,33 @@
                     }
                     else{
                         this.errorMsg='';
-                        this.thanksForReportDialogMessage="Member Reported !!";
-                        this.thanksForReportDialog=true;
+                        this.ws.send(JSON.stringify({
+                            reportMember:this.selectedMemberToReport,
+                            reportedBy:parseInt(localStorage.getItem("memberid"))
+                        }))
+                        setTimeout(() => {
+                        if(this.errorMsg.trim()===''){
                         this.reportMemberDialog=false;
+                        
+                        }
+                            
+                        }, 500);
+                        
                     }
 
                     setTimeout(() => {
                         this.thanksForReportDialog=false;
                     }, 2000);
+                },
+
+                kickout(memberid){
+                    // console.log("kicking ",memberid);
+                    this.ws.send(
+                        JSON.stringify({
+                          memberid:memberid,
+                          delete:true,
+                        })
+                    );
                 },
         }
     }

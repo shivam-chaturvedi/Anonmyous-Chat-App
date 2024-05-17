@@ -4,7 +4,7 @@ from channels.db import database_sync_to_async
 
 import json
 from urllib.parse import parse_qs
-from ChatApp.models import Member,Groups
+from ChatApp.models import *
 
 class MyConsumer(AsyncConsumer):
 
@@ -21,7 +21,7 @@ class MyConsumer(AsyncConsumer):
     @database_sync_to_async
     def get_members(self,group_id):
         group=Groups.objects.get(id=group_id)
-        group_members = [{'memberid':member.id,'name':member.Name} for member in group.member_set.all()] 
+        group_members = [{'memberid':member.id,'name':member.Name,'role':member.Role,'reportCount':member.ReportCount} for member in group.member_set.all()] 
         return group_members
     
     @database_sync_to_async
@@ -41,9 +41,30 @@ class MyConsumer(AsyncConsumer):
         
             group_name = group.Name
             group_id = group.id
-            group_members = [{'memberid':member.id,'name':member.Name} for member in group.member_set.all()] 
+            group_members = [{'memberid':member.id,'name':member.Name,'role':member.Role,'reportCount':member.ReportCount} for member in group.member_set.all()] 
     
             return {'group_id':group_id,'group_name':group_name,'group_members':group_members}
+        except Exception as e:
+            return {'error':str(e)}
+        
+    @database_sync_to_async
+    def report_member(self,reportedMember,reportedBy):
+        try:
+            member=Member.objects.get(id=reportedMember)
+            reported_by=Member.objects.get(id=reportedBy)
+            ReportedBYList=Report.objects.filter(reported_member=member)
+            
+            for reportedby in ReportedBYList:
+            
+                if(reportedby.reported_by==reported_by):
+                    # print("found")
+                    return {'alreadyReported':True,'reportCount':member.ReportCount}
+                    
+            member.ReportCount+=1
+            Report.objects.create(reported_member=member,reported_by=reported_by)
+            member.save()
+            return {'success':True,'reportCount':member.ReportCount}
+            
         except Exception as e:
             return {'error':str(e)}
         
@@ -84,18 +105,20 @@ class MyConsumer(AsyncConsumer):
 
     async def websocket_receive(self,e):
         data=json.loads(e['text'])
+        print(data)
+        
         if(data.get("delete",None)):
             print("Delete request for member id",data.get("memberid"))
             member_info=await self.get_member_info(data.get("memberid"))
             res=await self.delete_member(data.get("memberid"))
             if(res=="success"):
                 print("Member Deleted")
-                self.group_id=str(member_info.get("group_id"))
+                self.group_id=str(member_info.get("group_id")) 
                 group_members_updated=await self.get_members(int(self.group_id))
                 if(group_members_updated.__len__()==0):
                     # delete group also
-                    await self.delete_group(int(self.group_id))
-
+                    await self.delete_group(int(self.group_id))    
+                    
                 await self.channel_layer.group_send(self.group_id,{
                     'type':'chat.message',
                     'msg':json.dumps({
@@ -106,6 +129,37 @@ class MyConsumer(AsyncConsumer):
                     
                 })
                 })
+                
+                await self.channel_layer.group_discard(self.group_id,self.channel_name)
+
+        elif (data.get('reportMember',None)):
+            reportedMember=data.get('reportMember')
+            reportedBy=data.get("reportedBy")
+            res=await self.report_member(reportedMember,reportedBy)
+            print(res)
+            if(res.get("alreadyReported",None)):
+                await self.channel_layer.group_send(self.group_id,{
+                    'type':'chat.message',
+                    'msg':json.dumps({
+                    'alreadyReported':True,
+                    'reportCount':res['reportCount'] 
+                })
+                }) 
+
+            elif(res.get("success",None)):
+                await self.channel_layer.group_send(self.group_id,{
+                    'type':'chat.message',
+                    'msg':json.dumps({
+                    'reportedMember':reportedMember,
+                    'reportCount':res['reportCount']
+                    
+                })
+                })
+
+            # handel error 
+            else :
+                pass
+
 
         else:
             data['updateMemberInfo']=False
