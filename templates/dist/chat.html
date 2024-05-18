@@ -41,8 +41,14 @@
                         <!-- <img class="text-white rounded-full p-4 bg-yellow-300" src="images/member.svg" :alt="member"> -->
                         <p x-text="member.name[0] "
                             class="text-black pl-3 pr-3 pt-1 rounded-full h-12 w-12 text-center bg-purple-300 text-4xl font-bold uppercase"></p>
-                        <p class="ml-4  w-2/3  overflow-auto"
+                        
+                        <div class="w-2/4 overflow-auto ml-4 flex- flex-col"> 
+                            <p class=""
                             x-text="member.name"></p>
+                            
+                            <p  style="color: green;font-size: medium;font-weight: 900;" x-show="member.isOnline && localStorage.getItem('memberid')!=member.memberid">Online</p>
+                            <p style="color: red;font-size: medium;font-weight: 500;" x-show="!member.isOnline && localStorage.getItem('memberid')!=member.memberid">Offline</p>
+                        </div>
 
                         <img x-show="isAdmin && parseInt(localStorage.getItem('memberid'))!==member.memberid" class="cursor-pointer ml-auto " width="20px" height="20px" title="Kick"  @click="kickout(member.memberid)"   src="images/kick.svg" alt="kick">
                             
@@ -304,6 +310,13 @@
                         this.sidebar=false;
                     }
                 },
+                setOnlineStatus(s){
+                    this.ws.send(JSON.stringify({
+                        setStatus:true,
+                        memberid:localStorage.getItem("memberid"),
+                        status:s
+                    }));
+                },
                 initialize(){
 
                     const memberid=localStorage.getItem("memberid");
@@ -312,16 +325,14 @@
                     }
                     
                     this.ws=new WebSocket(`${this.wsURL}?id=${memberid}`);
+                    window.addEventListener('beforeunload', (event) => {
+                        this.setOnlineStatus(false);
+                        this.ws.close()
+                    
+                    });
                     this.ws.onopen=(e)=>{
                         // console.log("Connected to ",this.wsURL);
-                        if(localStorage.getItem("kicked")){
-                            this.exitGroup();
-                        }
-                        this.ws.send(JSON.stringify(
-                        {
-                            getReportCount:localStorage.getItem("memberid"),
-                        }
-                    ))
+                        this.setOnlineStatus(true);
                         const openReq=window.indexedDB.open('Messages',1);
 
                         openReq.onupgradeneeded=(event)=>{
@@ -355,18 +366,16 @@
                     
                     this.ws.onmessage=(e)=>{
                         const data=JSON.parse(e.data);
-                        console.log(data)
+                        // console.log(data)
                         if(data.error){
                             // console.log(data);
                             localStorage.clear();
                             window.indexedDB.deleteDatabase("Messages")
                             window.location.replace("/")
                         }
-                        else if(data.reportCount>-1){
-                            // console.log(data.reportCount,typeof(data.reportCount))
-                            if(data.reportCount>=this.members.length/2){
-                                this.exitGroup()
-                            }
+                        else if (data.updateRequired){
+                            // console.log("we need to update this.members")
+                            this.members=data.members;
                         }
                         else if(data.alreadyReported){
                             this.errorMsg="You have already reported this member";
@@ -378,7 +387,6 @@
                                 // console.log("reported")
                                 if(data.reportCount>=this.members.length/2){
                                     this.isReported=true;
-                                    localStorage.setItem("kicked",true)
                                     let timeremaining=10;
 
                                     const countdown=setInterval(()=>{
@@ -394,14 +402,28 @@
                                 }
                             }
                         }
+                        // it will get called always on initialization
                         else if(data.updateMemberInfo){
                             // console.log("needs update")
                             this.members=data.members;
                             this.groupId=data.groupId;
                             this.groupName=data.groupName;
-                            console.log(data.members)
+                            // console.log(data.members)
                             this.members.forEach((member)=>{
                                 if(member.memberid===parseInt(localStorage.getItem("memberid"))){
+                                    if(member.reportCount>=this.members.length/2){
+                                        this.isReported=true;
+                                        let timeremaining=5;
+
+                                        const countdown=setInterval(()=>{
+                                            timeremaining--;
+                                            this.reportedMemberMessage=`You'll get kicked after ${timeremaining} Seconds`;
+                                            if(timeremaining<=0){
+                                                this.exitGroup();
+                                                clearInterval(countdown);
+                                            }
+                                        },1000);
+                                    }
                                     if(member.role==='admin'){
                                         this.isAdmin=true;
                                     }
@@ -431,7 +453,7 @@
                     }
 
                     this.ws.onclose=(e)=>{
-                        console.log("websocket closed!")    
+                        console.log("websocket closed!"); 
                     }
                 },
                 sendMessage(){
@@ -552,12 +574,7 @@
                 },
         }
     }
-    window.addEventListener("beforeunload",(e)=>{
-        
-        // this.localDB.close();
-        // window.indexedDB.deleteDatabase("Messages")
-        // localStorage.clear();
-    });
+   
     </script>
     </body>
 </html>

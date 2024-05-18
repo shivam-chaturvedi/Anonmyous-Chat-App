@@ -16,6 +16,7 @@ class Member(models.Model):
     Group=models.ForeignKey(Groups,on_delete=models.CASCADE)
     Role=models.CharField(max_length=10,default="member")
     ReportCount=models.PositiveIntegerField(default=0)
+    isOnline=models.BooleanField(default=True)
     
 
     def __str__(self) -> str:
@@ -31,7 +32,7 @@ class Report(models.Model):
     def __str__(self):
         return f'{self.reported_by} reported {self.reported_member}'
     
-    
+
 
 
 

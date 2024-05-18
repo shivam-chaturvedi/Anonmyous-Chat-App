@@ -1,12 +1,15 @@
 from channels.consumer import AsyncConsumer
 from channels.exceptions import StopConsumer
 from channels.db import database_sync_to_async
-
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 import json
 from urllib.parse import parse_qs
 from ChatApp.models import *
 
 class MyConsumer(AsyncConsumer):
+
+    instances=set()
 
     @database_sync_to_async
     def delete_group(self,group_id):
@@ -21,7 +24,7 @@ class MyConsumer(AsyncConsumer):
     @database_sync_to_async
     def get_members(self,group_id):
         group=Groups.objects.get(id=group_id)
-        group_members = [{'memberid':member.id,'name':member.Name,'role':member.Role,'reportCount':member.ReportCount} for member in group.member_set.all()] 
+        group_members = [{'memberid':member.id,'name':member.Name,'role':member.Role,'reportCount':member.ReportCount,'isOnline':member.isOnline} for member in group.member_set.all()] 
         return group_members
     
     @database_sync_to_async
@@ -41,17 +44,19 @@ class MyConsumer(AsyncConsumer):
         
             group_name = group.Name
             group_id = group.id
-            group_members = [{'memberid':member.id,'name':member.Name,'role':member.Role,'reportCount':member.ReportCount} for member in group.member_set.all()] 
+            group_members = [{'memberid':member.id,'name':member.Name,'role':member.Role,'reportCount':member.ReportCount,'isOnline':member.isOnline} for member in group.member_set.all()] 
     
             return {'group_id':group_id,'group_name':group_name,'group_members':group_members}
         except Exception as e:
             return {'error':str(e)}
         
     @database_sync_to_async
-    def get_report_count(self,memberid):
+    def set_status(self,memberid,status):
         try:
             member=Member.objects.get(id=memberid)
-            return {'reportCount':member.ReportCount}
+            member.isOnline=status
+            member.save()
+            return {'isOnline':member.isOnline}
         except Exception as e:
             return {'error':str(e)}
     
@@ -82,6 +87,8 @@ class MyConsumer(AsyncConsumer):
         await self.send({
                 'type':'websocket.accept'
         })
+
+
         self.group_id=None
         query_param=parse_qs(self.scope['query_string'].decode('utf-8'))
         id=int(query_param.get('id',[None])[0])
@@ -101,7 +108,7 @@ class MyConsumer(AsyncConsumer):
         else:
             self.group_id=str(member_info['group_id'])
             await self.channel_layer.group_add(self.group_id,self.channel_name)
-            
+            self.__class__.instances.add(self)
             await self.channel_layer.group_send(self.group_id,{
                 'type':'chat.message',
                 'msg':json.dumps({
@@ -142,19 +149,15 @@ class MyConsumer(AsyncConsumer):
                 
                 await self.channel_layer.group_discard(self.group_id,self.channel_name)
 
-        elif (data.get('getReportCount',None)):
-            # print("getting")
-            res=await self.get_report_count(int(data.get('getReportCount')))
-            # print(res)
-            if(res.get("reportCount",None)):
-                await self.send({
-                    'type':'websocket.send',
-                    'text':json.dumps(res),
-                })
-        
-            else:
+        elif (data.get('setStatus',None)):
+            try:
+                memberid=int(data.get('memberid'))
+                res=await self.set_status(memberid,data.get('status'))
+            except Exception as e:
                 pass
-
+            
+         
+            
         elif (data.get('reportMember',None)):
             reportedMember=data.get('reportMember')
             reportedBy=data.get("reportedBy")
@@ -199,6 +202,40 @@ class MyConsumer(AsyncConsumer):
         })
 
     async def websocket_disconnect(self,e):
+        self.__class__.instances.remove(self)
         if(self.group_id):
             await self.channel_layer.group_discard(self.group_id,self.channel_name)
         raise StopConsumer()
+    
+    @classmethod
+    def get_all_instances(cls):
+        return cls.instances
+    
+@database_sync_to_async
+def get_Group(member):
+    group=member.Group
+    group_id=str(group.id)
+    group_members = [{'memberid':member.id,'name':member.Name,'role':member.Role,'reportCount':member.ReportCount,'isOnline':member.isOnline} for member in group.member_set.all()] 
+    
+    return {"group_id":group_id,"group_members":group_members}      
+
+@receiver(post_save,sender=Member)
+async def update_members(sender,**kwargs):
+    print("Member Created or Updated")
+    group_info=await get_Group(kwargs.get("instance"))
+    # print(group_id)
+    for instance in MyConsumer.get_all_instances():
+        if(instance.group_id==group_info.get("group_id")):  
+            # print(instance.group_id)  
+            await instance.send({
+                "type":"websocket.send",
+                "text":json.dumps({
+                    "updateRequired":True,
+                    "members":group_info.get("group_members")
+                })
+            })
+        else:
+            continue
+
+
+
