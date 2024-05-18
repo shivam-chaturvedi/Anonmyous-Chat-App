@@ -20,6 +20,10 @@ def home(req):
             else:
                 group_id=json_data.get("groupId")
                 group=Groups.objects.get(id=group_id)
+                current_group_members=group.member_set.all().__len__()
+                print(current_group_members)
+                if(current_group_members>=group.Limit):
+                    return JsonResponse({'error':"The group has already reached its maximum number of members"},status=400)
                 member=Member.objects.create(Name=username,Group=group)
                 return JsonResponse({'memberid':member.id},status=200)
         except Exception as e:

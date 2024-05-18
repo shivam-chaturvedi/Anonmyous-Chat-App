@@ -11,19 +11,27 @@
     }
     </style>
         <!-- <script src="https://cdn.tailwindcss.com"></script> -->
+        <script src="js/config.js"></script>
         <script defer
             src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     </head>
     <body class="flex flex-col bg-gray-900">
                             
+        
+            <!-- for bg colorful textures  -->
+            <!-- <div class="absolute  -z-50 w-full h-full top-1/2 left-1/2 text-center uppercase flex flex-col rounded-md shadow-md transform -translate-x-1/2 -translate-y-1/2 p-5">
+             
+            </div> -->
+
         <div x-data="app()" x-init="initialize()"
-            class=" flex p-2 absolute top-0 left-0 w-full h-full">
+            class=" flex p-2 absolute top-0 left-0 w-full h-full ">
+
 
             <!-- sidebar start -->
             <div style="height: 98%;"
-                x-bind:class="{'w-1/2 z-20 absolute  lg:relative lg:w-2/12 transition-all duration-300 ease-in-out ':sidebar,'w-0  lg:w-2/12':!sidebar}"
+                x-bind:class="{'w-1/2 absolute bg-gray-900 lg:w-2/12 lg:relative transition-all duration-300 ease-in-out ':sidebar,'w-0  lg:w-2/12':!sidebar}"
 
-                class="overflow-auto lg:p-2 bg-gray-900  ">
+                class="overflow-auto lg:p-2 z-50 bg-gray-900 ">
 
                 <h1
                     class="sticky top-0 z-20 text-white font-bold text-xl lg:text-2xl text-center p-4 mt-4 mb-2 bg-gray-800" x-text="`Total Members: ${members.length}`">Total
@@ -36,14 +44,14 @@
                 <template x-for="(member,index) in members" :key="index">
                     <!-- member div -->
                     <div 
-                    x-bind:class="{'sticky bottom-0 bg-gray-800  rounded-sm ': parseInt(localStorage.getItem('memberid'))===member.memberid}"
+                    x-bind:class="{'sticky bottom-0  bg-gray-800  rounded-sm ': parseInt(localStorage.getItem('memberid'))===member.memberid}"
                      class="w-full  text-white text-2xl overflow-auto h-auto flex items-center mt-2 mr-2  p-2 shadow  rounded-2xl ">
                         <!-- <img class="text-white rounded-full p-4 bg-yellow-300" src="images/member.svg" :alt="member"> -->
                         <p x-text="member.name[0] "
                             class="text-black pl-3 pr-3 pt-1 rounded-full h-12 w-12 text-center bg-purple-300 text-4xl font-bold uppercase"></p>
                         
                         <div class="w-2/4 overflow-auto ml-4 flex- flex-col"> 
-                            <p class=""
+                            <p class="w-2/4 overflow-auto"
                             x-text="member.name"></p>
                             
                             <p  style="color: green;font-size: medium;font-weight: 900;" x-show="member.isOnline && localStorage.getItem('memberid')!=member.memberid">Online</p>
@@ -77,9 +85,10 @@
 
             <!-- current member div end-->
 
+                
             <!-- main chat page -->
             <div @click="closeSidebar($event)"
-                class=" w-full lg:w-10/12  h-full relative bg-gray-700">
+                class=" w-full lg:w-10/12 z-20  h-full relative bg-gray-700">
                 <nav x-ref="navbar"
                     class="text-cyan-50 flex justify-between items-center w-full  bg-gray-900 border-b-0 border-black h-20 ">
                     <div @click="openSidebar()"
@@ -133,11 +142,11 @@
                 </nav>
                 <!-- main page -->
                 <main style="height: 80%"
-                 x-ref="chatBox" class="bg-slate-600 w-full ml-2  overflow-auto lg:h-5/6 p-3">
+                 x-ref="chatBox" class=" w-full ml-2  overflow-auto lg:h-5/6 p-3">
                     <!-- message box -->
                 
                     <template x-for="(message,index) in messages"  :key="index">
-                        <div style="line-height: 0%;max-width: 70%;"
+                        <div style="line-height: 0%;max-width: 85%;"
                             x-bind:class="{'ml-auto rounded-l-2xl rounded-tr-none ' : message.memberid===parseInt(localStorage.getItem('memberid'))};initialText=false;"
                             class=" p-2 whitespace-pre-line bg-white rounded-r-2xl shadow-lg  shadow-black rounded-b-2xl  font-mono h-fit break-words m-2 w-fit">
                             
@@ -187,7 +196,7 @@
             <!-- main chat page end -->
 
             <!-- report dialog -->
-            <div  x-show="reportDialog" class="bg-white absolute items-center top-1/2 left-1/2 uppercase flex flex-col rounded-md shadow-md transform -translate-x-1/2 -translate-y-1/2 p-5 text-xl lg:text-3xl w-4/5 lg:w-auto ">
+            <div  x-show="reportDialog" class="z-50 bg-white absolute items-center top-1/2 left-1/2 uppercase flex flex-col rounded-md shadow-md transform -translate-x-1/2 -translate-y-1/2 p-5 text-xl lg:text-3xl w-4/5 lg:w-auto ">
 
                 <div class="flex w-full items-center">
                     <h1 class="ml-4 text-3xl text-red-400 font-light">Report a  Problem</h1>
@@ -201,7 +210,7 @@
                 </div>
             </div>
             <!-- report bug dialog -->
-            <div x-show="reportBugDialog" class="bg-white absolute top-1/2 left-1/2 text-center uppercase flex flex-col rounded-md shadow-md transform -translate-x-1/2 -translate-y-1/2 p-5">
+            <div x-show="reportBugDialog" class="z-50 bg-white absolute top-1/2 left-1/2 text-center uppercase flex flex-col rounded-md shadow-md transform -translate-x-1/2 -translate-y-1/2 p-5">
                 <h1 class="text-3xl text-red-400 font-light text-md">oh shit!  You find a bug </h1>
                 <textarea x-model="reportBugText"  class="resize-none mt-5 mb-3 bg-gray-300 p-1 rounded-sm" rows="4" placeholder="Please ,Give Us Details About Issue"></textarea>
                 <p class="text-red-600 capitalize" x-text="errorMsg"></p>
@@ -210,6 +219,7 @@
                     <button @click="reportBug" class="m-2 border-2 text-lg bg-green-500 p-2 uppercase tracking-widest rounded-lg shadow-md hover:bg-green-700 hover:text-white hover:shadow-lg ">submit</button>
                 </div>
             </div>
+
 
 
             <!-- You Have been reported by mor ethan 50% members div -->
@@ -223,13 +233,13 @@
             
 
             <!-- Thanks For Reporting Dialog -->
-            <div @click.away="thanksForReportDialog=false" x-show="thanksForReportDialog" class="bg-green-400 absolute top-1/2 left-1/2 text-center uppercase flex flex-col rounded-md shadow-md transform -translate-x-1/2 -translate-y-1/2 p-5">
+            <div @click.away="thanksForReportDialog=false" x-show="thanksForReportDialog" class="z-50 bg-green-400 absolute top-1/2 left-1/2 text-center uppercase flex flex-col rounded-md shadow-md transform -translate-x-1/2 -translate-y-1/2 p-5">
                 <h1>Thanks For Your Report</h1>
                 <p x-text="thanksForReportDialogMessage"></p>
             </div>
 
             <!-- Report Member Dialog -->
-            <div x-show="reportMemberDialog" class="bg-white absolute top-1/2 left-1/2 z-40 text-center uppercase flex flex-col rounded-md shadow-md transform -translate-x-1/2 -translate-y-1/2 p-5 h-2/3 w-4/5">
+            <div x-show="reportMemberDialog" class="z-50 bg-white absolute top-1/2 left-1/2  text-center uppercase flex flex-col rounded-md shadow-md transform -translate-x-1/2 -translate-y-1/2 p-5 h-2/3 w-4/5">
                 <h1 class="text-3xl text-red-400 font-light text-md">Which Member You want to Report</h1>
                 
                 <div class="overflow-auto h-1/2 flex flex-col mt-4 p-2  bg-gray-700">
@@ -258,7 +268,7 @@
             
         </div>
         <script>
-
+            
         function app(){
 
             return {
@@ -271,13 +281,13 @@
                 messages:[],
                 members:[],
                 sidebar:false,
-                wsURL:'ws://localhost:8000/ws',
+                wsURL:`ws://${window.AppConfig.serverDomain}/ws`,
                 textAreaHeight:'60px',
                 exitHover:false,
                 shareHover:false,
                 reportHover:false,
                 shareText:'Share Group',
-                shareLink:'http://localhost:8080/',
+                shareLink:`http://${window.AppConfig.shareDomain}/`,
                 reportDialog:false,
                 reportBugDialog:false,
                 reportMemberDialog:false,

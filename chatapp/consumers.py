@@ -1,11 +1,11 @@
 from channels.consumer import AsyncConsumer
 from channels.exceptions import StopConsumer
 from channels.db import database_sync_to_async
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 import json
 from urllib.parse import parse_qs
 from ChatApp.models import *
+from django.db.models.signals import post_save
+from django.dispatch import receiver    
 
 class MyConsumer(AsyncConsumer):
 
@@ -210,7 +210,9 @@ class MyConsumer(AsyncConsumer):
     @classmethod
     def get_all_instances(cls):
         return cls.instances
-    
+
+
+
 @database_sync_to_async
 def get_Group(member):
     group=member.Group
@@ -220,22 +222,20 @@ def get_Group(member):
     return {"group_id":group_id,"group_members":group_members}      
 
 @receiver(post_save,sender=Member)
-async def update_members(sender,**kwargs):
-    print("Member Created or Updated")
-    group_info=await get_Group(kwargs.get("instance"))
-    # print(group_id)
-    for instance in MyConsumer.get_all_instances():
-        if(instance.group_id==group_info.get("group_id")):  
-            # print(instance.group_id)  
-            await instance.send({
-                "type":"websocket.send",
-                "text":json.dumps({
-                    "updateRequired":True,
-                    "members":group_info.get("group_members")
+async def update_members(sender,created,**kwargs):
+    if not created:
+        print("Member Created or Updated")
+        group_info=await get_Group(kwargs.get("instance"))
+        # print(group_id)
+        for instance in MyConsumer.get_all_instances():
+            if(instance.group_id==group_info.get("group_id")):  
+                # print(instance.group_id)  
+                await instance.send({
+                    "type":"websocket.send",
+                    "text":json.dumps({
+                        "updateRequired":True,
+                        "members":group_info.get("group_members")
+                    })
                 })
-            })
-        else:
-            continue
-
-
-
+            else:
+                continue
