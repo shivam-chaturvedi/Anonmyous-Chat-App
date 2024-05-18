@@ -4,13 +4,13 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Chat Room</title>
-        <link rel="stylesheet" href="output.css">
         <style>
     ::-webkit-scrollbar {
         display: none;
     }
     </style>
-        <!-- <script src="https://cdn.tailwindcss.com"></script> -->
+        <script defer src="https://cdn.tailwindcss.com"></script>
+        <!-- <link rel="stylesheet" href="output.css"> -->
         <script src="js/config.js"></script>
         <script defer
             src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -29,7 +29,7 @@
 
             <!-- sidebar start -->
             <div style="height: 98%;"
-                x-bind:class="{'w-1/2 absolute bg-gray-900 lg:w-2/12 lg:relative transition-all duration-300 ease-in-out ':sidebar,'w-0  lg:w-2/12':!sidebar}"
+                x-bind:class="{'w-2/3  md:w-1/2 absolute bg-gray-900 lg:w-2/12 lg:relative transition-all duration-300 ease-in-out ': sidebar,'w-0  lg:w-2/12':!sidebar}"
 
                 class="overflow-auto lg:p-2 z-50 bg-gray-900 ">
 
@@ -37,11 +37,14 @@
                     class="sticky top-0 z-20 text-white font-bold text-xl lg:text-2xl text-center p-4 mt-4 mb-2 bg-gray-800" x-text="`Total Members: ${members.length}`">Total
                     Members:X</h1>
 
-                <h2
-                    class="sticky top-20 z-20 bg-gray-600 text-white text-lg font-semibold text-center">Members</h2>
+                <!-- <h2
+                    class="sticky top-20 z-20 bg-gray-600 text-white text-lg font-semibold text-center">Members</h2> -->
 
                 
-                <template x-for="(member,index) in members" :key="index">
+                    <input x-model="searchMemberInput" x-on:input="searchMember" class="sticky top-20 mb-2 z-20 w-11/12 ml-2 text-lg p-2 rounded-md font-semibold" type="text" placeholder="Search members">
+
+                
+                <template x-for="(member,index) in filteredMembers" :key="index">
                     <!-- member div -->
                     <div 
                     x-bind:class="{'sticky bottom-0  bg-gray-800  rounded-sm ': parseInt(localStorage.getItem('memberid'))===member.memberid}"
@@ -280,6 +283,7 @@
                 message:'',
                 messages:[],
                 members:[],
+                filteredMembers:[],
                 sidebar:false,
                 wsURL:`ws://${window.AppConfig.serverDomain}/ws`,
                 textAreaHeight:'60px',
@@ -300,6 +304,7 @@
                 isAdmin:false,
                 isReported:false,
                 reportedMemberMessage:"You'll get kicked after 10 Seconds",
+                searchMemberInput:'',
                 
         
 
@@ -386,6 +391,7 @@
                         else if (data.updateRequired){
                             // console.log("we need to update this.members")
                             this.members=data.members;
+                            this.filteredMembers=this.members;
                         }
                         else if(data.alreadyReported){
                             this.errorMsg="You have already reported this member";
@@ -416,6 +422,7 @@
                         else if(data.updateMemberInfo){
                             // console.log("needs update")
                             this.members=data.members;
+                            this.filteredMembers=this.members;
                             this.groupId=data.groupId;
                             this.groupName=data.groupName;
                             // console.log(data.members)
@@ -507,6 +514,24 @@
                     window.indexedDB.deleteDatabase("Messages")
                     window.location.replace("/")
 
+                },
+                searchMember(){
+                    this.filteredMembers=this.members;
+                    if(this.searchMemberInput.trim()===''){
+                        this.filteredMembers=this.members;
+                        return;
+                    }
+                    const filteredMembers=this.filteredMembers.filter((member)=>{
+                        if(String(member.name).toLowerCase().startsWith(this.searchMemberInput.toLowerCase())){
+                            return true;
+                        }
+                        else{
+                            return false;
+                        }
+                    })
+                    // console.log(filteredMembers)
+                    this.filteredMembers=filteredMembers;
+                    // console.log(this.searchMemberInput)
                 },
                 shareGroup(){
                     navigator.clipboard.writeText(this.shareLink)
