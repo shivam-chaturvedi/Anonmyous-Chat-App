@@ -59,19 +59,34 @@
                 groupLimitInput:'',
                 usernameInput:'',
                 groupPasswordInput:'',
+                shareMode:false,
                 initialize(){
                     const memberid=localStorage.getItem("memberid");
                     if(memberid){
                         window.location.replace("/chat.html")
                     }
+                    const urlParams=new URLSearchParams(window.location.search);
+                    groupId=urlParams.get("groupid")
+                    password=urlParams.get("pass")
+                    // console.log(groupId,password)
+                    if(groupId!==null && password!==null){
+                        this.joinGroupForm=true;
+                        this.createGroupForm=false;
+                        this.groupIdInput=groupId;
+                        this.groupPasswordInput=password;
+                        this.shareMode=true;
+                    }
                 },
                 openCreateGroupForm(e){
+                    this.errormsg='';
+                    this.groupPasswordInput='';
                     this.createGroupForm=true;
                     this.joinGroupForm=false;
                    
                 },
                 openJoinGroupForm(e){
-                    this.errormsg=''
+                    this.errormsg='';
+                    // this.groupPasswordInput='';
                     this.joinGroupForm=true;
                     this.createGroupForm=false;
                 },
@@ -127,6 +142,7 @@
                         groupId:this.groupIdInput,
                         username:this.usernameInput,
                         password:this.groupPasswordInput,
+                        sharemode:this.shareMode,
                     }
                     try{
                         const res=await fetch(this.formApi,

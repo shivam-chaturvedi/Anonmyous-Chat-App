@@ -46,7 +46,7 @@ class MyConsumer(AsyncConsumer):
             group_id = group.id
             group_members = [{'memberid':member.id,'name':member.Name,'role':member.Role,'reportCount':member.ReportCount,'isOnline':member.isOnline} for member in group.member_set.all()] 
     
-            return {'group_id':group_id,'group_name':group_name,'group_members':group_members}
+            return {'group_id':group_id,'group_name':group_name,'group_members':group_members,'group_pass':group.Password}
         except Exception as e:
             return {'error':str(e)}
         
@@ -116,6 +116,7 @@ class MyConsumer(AsyncConsumer):
                     'members':member_info.get('group_members'),
                     'groupName':member_info.get('group_name'),
                     'groupId':member_info.get('group_id'),
+                    'groupPass':member_info.get("group_pass"),
                     
                 })
             })

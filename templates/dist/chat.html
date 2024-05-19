@@ -54,7 +54,7 @@
                             class="text-black pl-3 pr-3 pt-1 rounded-full h-12 w-12 text-center bg-purple-300 text-4xl font-bold uppercase"></p>
                         
                         <div class="w-2/4 overflow-auto ml-4 flex- flex-col"> 
-                            <p class="w-2/4 overflow-auto"
+                            <p class="w-full overflow-auto"
                             x-text="member.name"></p>
                             
                             <p  style="color: green;font-size: medium;font-weight: 900;" x-show="member.isOnline && localStorage.getItem('memberid')!=member.memberid">Online</p>
@@ -279,6 +279,7 @@
                 localDB:null,
                 groupName:'Room Name',
                 groupId:'Room ID',
+                groupPass:'',
                 initialText:true,
                 message:'',
                 messages:[],
@@ -425,6 +426,7 @@
                             this.filteredMembers=this.members;
                             this.groupId=data.groupId;
                             this.groupName=data.groupName;
+                            this.groupPass=data.groupPass;
                             // console.log(data.members)
                             this.members.forEach((member)=>{
                                 if(member.memberid===parseInt(localStorage.getItem("memberid"))){
@@ -533,8 +535,9 @@
                     this.filteredMembers=filteredMembers;
                     // console.log(this.searchMemberInput)
                 },
+                
                 shareGroup(){
-                    navigator.clipboard.writeText(this.shareLink)
+                    navigator.clipboard.writeText(`${this.shareLink}?groupid=${this.groupId}&pass=${this.groupPass}`)
                     .then(()=> {
                         // Success message
                         this.shareText="Link Copied"

@@ -21,7 +21,7 @@ def home(req):
             json_data=json.loads(req.body.decode('utf-8'))
             username=json_data.get('username')
             password=json_data.get("password")
-            print(password)
+            # print(password)
             
             if(json_data.get("createGroup")):
                 group_name=json_data.get('groupName')
@@ -30,10 +30,18 @@ def home(req):
                 member=Member.objects.create(Name=username,Group=Group,Role="admin")
                 return JsonResponse({'memberid':member.id},status=200)
             else:
-                group_id=json_data.get("groupId")
+                group_id=int(json_data.get("groupId"))
                 group=Groups.objects.get(id=group_id)
-                if(make_hash(password)!=group.Password):
-                    return JsonResponse({'error':"Incorrect Password !!"},status=400)
+                share_mode=bool(json_data.get("sharemode"))
+                print(share_mode)
+
+                if(share_mode):
+                    if(password!=group.Password):
+                        return JsonResponse({'error':"Your Link Is Broken !!"},status=400)  
+                else:
+                    if(make_hash(password)!=group.Password):
+                        return JsonResponse({'error':"Incorrect Password !!"},status=400)
+                
                 current_group_members=group.member_set.all().__len__()
                 # print(current_group_members)
                 if(current_group_members>=group.Limit):
