@@ -149,7 +149,7 @@
                     <!-- message box -->
                 
                     <template x-for="(message,index) in messages"  :key="index">
-                        <div style="line-height: 0%;max-width: 85%;"
+                        <div style="line-height: 0%;max-width: 85%;min-width: 10%;"
                             x-bind:class="{'ml-auto rounded-l-2xl rounded-tr-none ' : message.memberid===parseInt(localStorage.getItem('memberid'))};initialText=false;"
                             class=" p-2 whitespace-pre-line bg-white rounded-r-2xl shadow-lg  shadow-black rounded-b-2xl  font-mono h-fit break-words m-2 w-fit">
                             

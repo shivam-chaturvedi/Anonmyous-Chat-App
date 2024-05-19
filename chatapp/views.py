@@ -3,23 +3,37 @@ from django.http import JsonResponse
 from ChatApp.models import *
 from django.views.decorators.csrf import csrf_exempt
 import json
+import hashlib
 
 # Create your views here.
+
+def make_hash(password):
+    encoded_pass=password.encode()
+    sha256_hash=hashlib.sha256()
+    sha256_hash.update(encoded_pass)
+    hashed_pass=sha256_hash.hexdigest()
+    return hashed_pass
+
 @csrf_exempt
 def home(req):
     if(req.method=="POST"):
         try:
             json_data=json.loads(req.body.decode('utf-8'))
             username=json_data.get('username')
+            password=json_data.get("password")
+            print(password)
+            
             if(json_data.get("createGroup")):
                 group_name=json_data.get('groupName')
                 group_limit=int(json_data.get('groupLimit'))
-                Group=Groups.objects.create(Name=group_name,Limit=group_limit)
+                Group=Groups.objects.create(Name=group_name,Limit=group_limit,Password=make_hash(password))
                 member=Member.objects.create(Name=username,Group=Group,Role="admin")
                 return JsonResponse({'memberid':member.id},status=200)
             else:
                 group_id=json_data.get("groupId")
                 group=Groups.objects.get(id=group_id)
+                if(make_hash(password)!=group.Password):
+                    return JsonResponse({'error':"Incorrect Password !!"},status=400)
                 current_group_members=group.member_set.all().__len__()
                 # print(current_group_members)
                 if(current_group_members>=group.Limit):

@@ -28,6 +28,8 @@
         <div x-show="createGroupForm" @click.away="createGroupForm=false;" class="flex border-2 flex-col absolute  top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-2xl shadow-md bg-gray-300 bg-opacity-80 w-auto md:text-2xl  p-4">
             <input x-model="groupNameinput" class="m-2 transform focus:scale-105 p-2" type="text" placeholder="Enter Group Name">
             <input x-model="groupLimitInput" class="m-2 transform focus:scale-105 p-2" type="number" placeholder="Group Limit"  min="2">
+            <input x-model="groupPasswordInput" class="m-2 transform focus:scale-105 p-2" type="password" placeholder="Create Password">
+            
             <label class="mt-2 ml-2 p-2" for="member-name">Join as</label>
             <input x-model="usernameInput" class="mb-2 ml-2 transform focus:scale-105 p-2" type="text" placeholder="Enter Your Name" name="member-name">
             <p x-text="errormsg" class="text-red-600"></p>
@@ -35,6 +37,8 @@
         </div>
         <div x-show="joinGroupForm" @click.away="joinGroupForm=false;" class="flex border-2 flex-col absolute  top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-2xl shadow-md bg-gray-300 bg-opacity-80 w-auto md:text-2xl  p-4">
             <input x-model="groupIdInput" class="m-2 transform focus:scale-105 p-2" type="text" placeholder="Enter Group ID">
+            <input x-model="groupPasswordInput" class="m-2 transform focus:scale-105 p-2" type="password" placeholder="Enter Password">
+            
             <label class="mt-2 ml-2 p-2" for="member-name">Join as</label>
             <input x-model="usernameInput" class="mb-2 ml-2 transform focus:scale-105 p-2" type="text" placeholder="Enter Your Name" name="member-name">
             <p x-text="errormsg" class="text-red-600"></p>
@@ -54,6 +58,7 @@
                 groupNameinput:'',
                 groupLimitInput:'',
                 usernameInput:'',
+                groupPasswordInput:'',
                 initialize(){
                     const memberid=localStorage.getItem("memberid");
                     if(memberid){
@@ -72,8 +77,12 @@
                 },
                 async createGroup(){
                     this.errormsg=''
-                    if(this.groupNameinput.trim()==="" || this.usernameInput.trim()===""){
+                    if(this.groupNameinput.trim()==="" || this.usernameInput.trim()==="" || this.groupPasswordInput.trim()===''){
                         this.errormsg="Please,Fill All The Fields First!";
+                        return;
+                    }
+                    if(this.groupPasswordInput.trim().length<8){
+                        this.errormsg="Password must be at least 8 characters long";
                         return;
                     }
                     if(this.groupLimitInput<2){
@@ -85,6 +94,7 @@
                         groupName:this.groupNameinput,
                         groupLimit:this.groupLimitInput,
                         username:this.usernameInput,
+                        password:this.groupPasswordInput,
                     }
                     try{
                         const response=await fetch(
@@ -116,6 +126,7 @@
                         createGroup:false,
                         groupId:this.groupIdInput,
                         username:this.usernameInput,
+                        password:this.groupPasswordInput,
                     }
                     try{
                         const res=await fetch(this.formApi,

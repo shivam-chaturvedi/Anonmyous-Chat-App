@@ -6,6 +6,7 @@ class Groups(models.Model):
     # GroupId=models.CharField(max_length=20,primary_key=True)
     Name=models.CharField(max_length=30)
     Limit=models.PositiveIntegerField(default=2)
+    Password=models.CharField(max_length=100)
 
     def __str__(self) -> str:
         return self.Name
