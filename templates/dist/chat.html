@@ -157,8 +157,10 @@
                             <h1 class="text-2xl text-blue-700  uppercase font-bold m-0 " x-text="getMemberName(message.memberid)"></h1>
                             -----
                             </div>
-
-                            <p  class="text-black font-sans text-xl  m-0 mt-2" x-text="message.content"></p>
+                            <template x-if="urlPattern.test(message.content)">
+                                <a x-bind:href="message.content" class="text-blue-700 hover:text-blue-500 font-sans text-xl  m-0 mt-2" x-text="message.content" target="_blank"></a>
+                            </template>
+                            <p x-show="!urlPattern.test(message.content)" class="text-black font-sans text-xl  m-0 mt-2" x-text="message.content"></p>
                             <!-- this p tag is added only to scroll the div at end when a message added -->
                             <p x-effect="$refs.chatBox.scrollTop=$refs.chatBox.scrollHeight"></p> 
                             
@@ -306,6 +308,8 @@
                 isReported:false,
                 reportedMemberMessage:"You'll get kicked after 10 Seconds",
                 searchMemberInput:'',
+                urlPattern : /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([\/\w .-]*)*\/?$/,
+                
                 
         
 
@@ -459,8 +463,22 @@
                             
                         }
                         else{
-                            const message={memberid:parseInt(data.memberid),content:data.content.trim()}
-                            this.messages.push(message);
+                            let message={memberid:parseInt(data.memberid),content:data.content.trim()}
+                            if(this.urlPattern.test(message.content)){
+                                if(!message.content.startsWith("https://") && !message.content.startsWith("http://")){
+                                    formattedUrl="https://"+message.content;
+                                    message={memberid:message.memberid,content:formattedUrl};
+                                    this.messages.push(message);
+                                }
+                                else{
+                                    this.messages.push(message);
+                                }
+                            }
+                            else{
+                                this.messages.push(message);
+                            }
+                            // console.log(message);
+                            // console.log(this.urlPattern.test(message.content))
                             const transaction=this.localDB.transaction(['message'],'readwrite');
                             const objectStore=transaction.objectStore('message');
                             const addDataReq=objectStore.add(message);
