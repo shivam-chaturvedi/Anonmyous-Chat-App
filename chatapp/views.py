@@ -55,3 +55,6 @@ def home(req):
             return JsonResponse({'error':str(e)},status=400)
     else:
         return render(req,'index.html')
+    
+
+
